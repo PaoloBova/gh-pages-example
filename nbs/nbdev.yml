@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "gh-pages-example"
+  site-url: "https://PaoloBova.github.io/gh-pages-example"
+  description: "A quick project to test setting up gh-pages"
+  repo-branch: main
+  repo-url: "https://github.com/PaoloBova/gh-pages-example"
