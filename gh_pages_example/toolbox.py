@@ -6,13 +6,13 @@ __all__ = ['T_type', 'fermi_learning', 'fixation_rate', 'build_transition_matrix
 # %% ../nbs/01_methods.ipynb 1
 from nbdev.showdoc import *
 from fastcore.test import test_eq
-
+from .utils import *
 import typing
 
 import numpy as np
 import nptyping
 
-# %% ../nbs/01_methods.ipynb 13
+# %% ../nbs/01_methods.ipynb 9
 def fermi_learning(β:nptyping.NDArray, # learning rate
                    fitnessA:nptyping.NDArray, # fitness of strategy A
                    fitnessB:nptyping.NDArray # fitness of strategy B
@@ -20,12 +20,12 @@ def fermi_learning(β:nptyping.NDArray, # learning rate
     """Compute the likelihood that a player with strategy B adopts strategy A using the fermi function."""
     return (1 + np.exp(-β*(fitnessA - fitnessB)))**-1
 
-# %% ../nbs/01_methods.ipynb 22
-T_type = list[nptyping.NDArray[nptyping.Shape["N_models, N_strategies, N_strategies"], typing.Any]]
+# %% ../nbs/01_methods.ipynb 17
+T_type = list[nptyping.NDArray[nptyping.Shape["N_models"], typing.Any]]
 
-def fixation_rate(Tplus: T_type, # A list of NDarrays, one array for each possible number of mutants in the population, each array should be of shape (n_models, n_strategies, n_strategies) for computing all fixation rates for each model; the probability of gaining one mutant
-                  Tneg: T_type, # A list of NDarrays, one array for each possible number of mutants in the population, each array should be of shape (n_models, n_strategies, n_strategies) for computing all fixation rates for each model; the probability of losing one mutant
-                 ) -> nptyping.NDArray[nptyping.Shape["N_models, N_strategies, N_strategies"], typing.Any]:
+def fixation_rate(Tplus: T_type, # A list of NDarrays, one array (of size n_models) for each possible number of mutants in the population; the probability of gaining one mutant
+                  Tneg: T_type, # A list of NDarrays, one array (of size n_models) for each possible number of mutants in the population; the probability of losing one mutant
+                 ) -> nptyping.NDArray[nptyping.Shape["N_models"], typing.Any]: # Fixation rates for the given strategy in each model
     """Calculate the likelihood that a mutant invades the population."""
     Z = len(Tplus) - 1
     ρ = (np.sum([np.prod([Tneg[j]/Tplus[j]
@@ -38,10 +38,12 @@ def fixation_rate(Tplus: T_type, # A list of NDarrays, one array for each possib
         + 1)**-1
     return ρ
 
-# %% ../nbs/01_methods.ipynb 35
-def build_transition_matrix(models):
+# %% ../nbs/01_methods.ipynb 36
+def build_transition_matrix(models:dict # A dictionary containing EGT models stacked as arrays
+                           ):
     """Build a transition matrix between all monomorphic states
-    using the fermi social learning rule for each model."""
+    using the fermi social learning rule for each model.    
+    """
     
     Z, S, β = [models[k] for k in ['Z','strategy_set', 'β']]
     π = models['payoffs']
