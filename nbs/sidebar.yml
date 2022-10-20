@@ -4,4 +4,5 @@ website:
       - index.ipynb
       - 00_core.ipynb
       - 01_methods.ipynb
+      - 02_payoffs1.ipynb
       - utils.ipynb

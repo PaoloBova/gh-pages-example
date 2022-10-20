@@ -10,7 +10,7 @@ import numpy as np
 
 # %% ../nbs/02_payoffs1.ipynb 6
 def payoffs_sr(models):
-    """The short run payoffs for the AISR game."""
+    """The short run payoffs for the DSAIR game."""
     s, b, c = [models[k] for k in ['s', 'b', 'c']]
     πAA = -c + b/2
     πAB = -c + b/(s+1)
@@ -22,7 +22,7 @@ def payoffs_sr(models):
 
 # %% ../nbs/02_payoffs1.ipynb 8
 def payoffs_sr_pfo_extension(model):
-    """The short run payoffs for the AISR game with a chance of unsafe
+    """The short run payoffs for the DSAIR game with a chance of unsafe
     behaviour being spotted."""
     s, b, c, pfo = [model[k] for k in ['s', 'b', 'c', 'pfo']]
     πAA =  -c + b/2
@@ -35,7 +35,7 @@ def payoffs_sr_pfo_extension(model):
 
 # %% ../nbs/02_payoffs1.ipynb 10
 def payoffs_lr(model):
-    """The long run average payoffs for the AISR game."""
+    """The long run average payoffs for the DSAIR game."""
     s, p, B, W = [model[k] for k in ['s', 'p', 'B', 'W']]
     πAA,πAB,πBA,πBB = [model['payoffs_sr'][:,[i],[j]]
                        for i in range(2) for j in range(2)]
@@ -49,7 +49,7 @@ def payoffs_lr(model):
 
 # %% ../nbs/02_payoffs1.ipynb 12
 def payoffs_lr_peer_punishment(model):
-    """The long run average payoffs for the AISR game with peer punishment."""
+    """The long run average payoffs for the DSAIR game with peer punishment."""
     s,b,c, p, B, W = [model[k] for k in ['s', 'b', 'c', 'p', 'B', 'W']]
     α, γ, ϵ = [model[k] for k in ['α', 'γ', 'ϵ']]
     πAA,πAB,πBA,πBB = [model['payoffs_sr'][:,[i],[j]]
@@ -100,7 +100,7 @@ def payoffs_lr_peer_punishment(model):
 
 # %% ../nbs/02_payoffs1.ipynb 16
 def payoffs_lr_peer_reward(model):
-    """The long run average payoffs for the AISR game with peer punishment."""
+    """The long run average payoffs for the DSAIR game with peer punishment."""
     s,b,c, p, B, W = [model[k] for k in ['s', 'b', 'c', 'p', 'B', 'W']]
     α, γ, ϵ = [model[k] for k in ['α', 'γ', 'ϵ']]
     πAA,πAB,πBA,πBB = [model['payoffs_sr'][:,[i],[j]]
@@ -125,7 +125,7 @@ def payoffs_lr_peer_reward(model):
 
 # %% ../nbs/02_payoffs1.ipynb 18
 def payoffs_lr_voluntary(model):
-    """The long run average payoffs for the AISR game with voluntary
+    """The long run average payoffs for the DSAIR game with voluntary
     commitments."""
     s,b,c, p, B, W = [model[k] for k in ['s', 'b', 'c', 'p', 'B', 'W']]
     α, γ, ϵ = [model[k] for k in ['α', 'γ', 'ϵ']]
