@@ -4,11 +4,16 @@
 __all__ = ['payoffs_sr', 'payoffs_sr_pfo_extension', 'payoffs_lr', 'payoffs_lr_peer_punishment', 'payoffs_lr_peer_reward',
            'payoffs_lr_voluntary']
 
-# %% ../nbs/02_payoffs1.ipynb 3
-import nptyping
-import numpy as np
+# %% ../nbs/02_payoffs1.ipynb 2
+from nbdev.showdoc import *
+from fastcore.test import test_eq
+from .utils import *
+import typing
 
-# %% ../nbs/02_payoffs1.ipynb 6
+import numpy as np
+import nptyping
+
+# %% ../nbs/02_payoffs1.ipynb 5
 def payoffs_sr(models):
     """The short run payoffs for the DSAIR game."""
     s, b, c = [models[k] for k in ['s', 'b', 'c']]
@@ -20,7 +25,7 @@ def payoffs_sr(models):
                        [πBA, πBB]])
     return {**models, 'payoffs_sr':matrix}
 
-# %% ../nbs/02_payoffs1.ipynb 8
+# %% ../nbs/02_payoffs1.ipynb 7
 def payoffs_sr_pfo_extension(model):
     """The short run payoffs for the DSAIR game with a chance of unsafe
     behaviour being spotted."""
@@ -33,7 +38,7 @@ def payoffs_sr_pfo_extension(model):
                        [πBA, πBB]])
     return {**model, 'payoffs_sr':matrix}
 
-# %% ../nbs/02_payoffs1.ipynb 10
+# %% ../nbs/02_payoffs1.ipynb 9
 def payoffs_lr(model):
     """The long run average payoffs for the DSAIR game."""
     s, p, B, W = [model[k] for k in ['s', 'p', 'B', 'W']]
@@ -47,7 +52,7 @@ def payoffs_lr(model):
                         [πBA, πBB]])
     return {**model, 'payoffs': payoffs}
 
-# %% ../nbs/02_payoffs1.ipynb 12
+# %% ../nbs/02_payoffs1.ipynb 11
 def payoffs_lr_peer_punishment(model):
     """The long run average payoffs for the DSAIR game with peer punishment."""
     s,b,c, p, B, W = [model[k] for k in ['s', 'b', 'c', 'p', 'B', 'W']]
@@ -98,7 +103,7 @@ def payoffs_lr_peer_punishment(model):
                        ])
     return {**model, 'payoffs':matrix}
 
-# %% ../nbs/02_payoffs1.ipynb 16
+# %% ../nbs/02_payoffs1.ipynb 15
 def payoffs_lr_peer_reward(model):
     """The long run average payoffs for the DSAIR game with peer punishment."""
     s,b,c, p, B, W = [model[k] for k in ['s', 'b', 'c', 'p', 'B', 'W']]
@@ -123,7 +128,7 @@ def payoffs_lr_peer_reward(model):
                        ])
     return {**model, 'payoffs':matrix}
 
-# %% ../nbs/02_payoffs1.ipynb 18
+# %% ../nbs/02_payoffs1.ipynb 17
 def payoffs_lr_voluntary(model):
     """The long run average payoffs for the DSAIR game with voluntary
     commitments."""
