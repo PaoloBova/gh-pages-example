@@ -42,7 +42,7 @@ def payoffs_sr_pfo_extension(model):
 def payoffs_lr(model):
     """The long run average payoffs for the DSAIR game."""
     s, p, B, W = [model[k] for k in ['s', 'p', 'B', 'W']]
-    πAA,πAB,πBA,πBB = [model['payoffs_sr'][:,[i],[j]]
+    πAA,πAB,πBA,πBB = [model['payoffs_sr'][:, i:i+1, j:j+1]
                        for i in range(2) for j in range(2)]
     πAA = πAA + B/(2*W)
     πAB = πAB
@@ -57,7 +57,7 @@ def payoffs_lr_peer_punishment(model):
     """The long run average payoffs for the DSAIR game with peer punishment."""
     s,b,c, p, B, W = [model[k] for k in ['s', 'b', 'c', 'p', 'B', 'W']]
     α, γ, ϵ = [model[k] for k in ['α', 'γ', 'ϵ']]
-    πAA,πAB,πBA,πBB = [model['payoffs_sr'][:,[i],[j]]
+    πAA,πAB,πBA,πBB = [model['payoffs_sr'][:, i:i+1, j:j+1]
                        for i in range(2) for j in range(2)]
     
     s_punished = s - γ
@@ -108,7 +108,7 @@ def payoffs_lr_peer_reward(model):
     """The long run average payoffs for the DSAIR game with peer punishment."""
     s,b,c, p, B, W = [model[k] for k in ['s', 'b', 'c', 'p', 'B', 'W']]
     α, γ, ϵ = [model[k] for k in ['α', 'γ', 'ϵ']]
-    πAA,πAB,πBA,πBB = [model['payoffs_sr'][:,[i],[j]]
+    πAA,πAB,πBA,πBB = [model['payoffs_sr'][:, i:i+1, j:j+1]
                        for i in range(2) for j in range(2)]
     
     s_rewarded = s + γ
@@ -134,7 +134,7 @@ def payoffs_lr_voluntary(model):
     commitments."""
     s,b,c, p, B, W = [model[k] for k in ['s', 'b', 'c', 'p', 'B', 'W']]
     α, γ, ϵ = [model[k] for k in ['α', 'γ', 'ϵ']]
-    πAA,πAB,πBA,πBB = [model['payoffs_sr'][:,[i],[j]]
+    πAA,πAB,πBA,πBB = [model['payoffs_sr'][:, i:i+1, j:j+1]
                        for i in range(2) for j in range(2)]
     
     s_punished = s - γ

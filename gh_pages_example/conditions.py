@@ -17,7 +17,7 @@ def threshold_society_prefers_safety_dsair(models):
     """The threhsold value of AI risk for which society prefers firms to be
     Always Safe in the DSAIR model."""
     s, B, W = [models[k] for k in ['s', 'B', 'W']]
-    πAA,πAB,πBA,πBB = [models['payoffs_sr'][:,[i],[j]]
+    πAA,πAB,πBA,πBB = [models['payoffs_sr'][:, i:i+1, j:j+1]
                        for i in range(2) for j in range(2)]
     p_risk = 1 - ((πAA + B / (2 * W))
                   / (πBB + s * B / (2 * W)))
@@ -28,7 +28,7 @@ def threshold_risk_dominant_safety_dsair(models):
     """The threshold value of AI risk for which Always Safe is risk dominant
     against Always Unsafe in the DSAIR model."""
     s, B, W = [models[k] for k in ['s', 'B', 'W']]
-    πAA,πAB,πBA,πBB = [models['payoffs_sr'][:,[i],[j]]
+    πAA,πAB,πBA,πBB = [models['payoffs_sr'][:, i:i+1, j:j+1]
                        for i in range(2) for j in range(2)]
     p_risk = 1 - ((πAA + πAB + B / (2 * W))
                   / (πBA + πBB + 3 * s * B / (2 * W)))

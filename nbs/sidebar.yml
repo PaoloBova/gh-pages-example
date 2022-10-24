@@ -2,7 +2,9 @@ website:
   sidebar:
     contents:
       - index.ipynb
-      - 00_core.ipynb
       - 01_methods.ipynb
       - 02_payoffs1.ipynb
+      - 03_analytical_conditions.ipynb
+      - 10_analysis_dsair.ipynb
+      - plots_utils.ipynb
       - utils.ipynb

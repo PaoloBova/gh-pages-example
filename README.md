@@ -20,7 +20,7 @@ Here is the documentation for
 ------------------------------------------------------------------------
 
 <a
-href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/toolbox.py#LNone"
+href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/methods.py#LNone"
 target="_blank" style="float:right; font-size:smaller">source</a>
 
 ### fermi_learning
