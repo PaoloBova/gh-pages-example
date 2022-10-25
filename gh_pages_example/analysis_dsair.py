@@ -23,8 +23,7 @@ def fig1_data(b=4, c=1, B=10**4, W=100, β=0.01, Z=100, S=['A','B'], gamma=1):
     matchingvalues = np.array([[s,b,c,p,B,W,β,gamma]
                                for s in np.arange(1,5.1,0.1)
                                for p in np.arange(0,1.02,0.02)])
-    models = {k:v[:, None, None]
-              for k, v in zip(namesofvalues, matchingvalues.T)}
+    models = {k:v for k, v in zip(namesofvalues, matchingvalues.T)}
     models = {**models,
               'Z':Z, # Z should be a scalar
               'strategy_set':S # S should be a list of strings

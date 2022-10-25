@@ -47,9 +47,9 @@ target="_blank" style="float:right; font-size:smaller">source</a>
 Build a transition matrix between all monomorphic states using the fermi
 social learning rule for each model.
 
-|        | **Type** | **Details**                                          |
-|--------|----------|------------------------------------------------------|
-| models | dict     | A dictionary containing EGT models stacked as arrays |
+|        | **Type** | **Details**                                                                                                                           |
+|--------|----------|---------------------------------------------------------------------------------------------------------------------------------------|
+| models | dict     | A dictionary that contains the parameters in [`ModelTypeEGT`](https://PaoloBova.github.io/gh-pages-example/methods.html#modeltypeegt) |
 
 ------------------------------------------------------------------------
 

@@ -8,29 +8,32 @@ __all__ = ['ModelTypeDSAIR', 'payoffs_sr', 'payoffs_sr_pfo_extension', 'payoffs_
 from nbdev.showdoc import *
 from fastcore.test import test_eq
 from .utils import *
+from .types import *
 import typing
 
 import numpy as np
 import nptyping
 
-# %% ../nbs/02_payoffs1.ipynb 4
+# %% ../nbs/02_payoffs1.ipynb 5
 class ModelTypeDSAIR():
     """This is the schema for the inputs to a DSAIR model.
     
     Note: This schema is not enforced and is here purely for documentation
     purposes."""
     def __init__(self, 
-                 b: nptyping.NDArray, # benefits
-                 c: nptyping.NDArray, # costs
-                 s: nptyping.NDArray, # speed
-                 p: nptyping.NDArray, # avoid risk
-                 B: nptyping.NDArray, # prize
-                 W: nptyping.NDArray, # timeline
-                 pfo: nptyping.NDArray=None, # detection risk
+                 b: Array1D, # The size of the per round benefit of leading the AI development race, $b>0$
+                 c: Array1D, # costs
+                 s: Array1D, # speed
+                 p: Array1D, # avoid risk
+                 B: Array1D, # prize
+                 W: Array1D, # timeline
+                 pfo: Array1D=None, # detection risk
+                 ϵ: Array1D=None, # 
+                 ω: Array1D=None, #
                 ):
         pass
 
-# %% ../nbs/02_payoffs1.ipynb 7
+# %% ../nbs/02_payoffs1.ipynb 8
 def payoffs_sr(models):
     """The short run payoffs for the DSAIR game."""
     s, b, c = [models[k] for k in ['s', 'b', 'c']]
@@ -38,11 +41,17 @@ def payoffs_sr(models):
     πAB = -c + b/(s+1)
     πBA = s*b/(s+1)
     πBB = b/2
+    
+    # Promote all stacks to 3D arrays
+    πAA = πAA[:, None, None]
+    πAB = πAB[:, None, None]
+    πBA = πBA[:, None, None]
+    πBB = πBB[:, None, None]
     matrix = np.block([[πAA, πAB], 
                        [πBA, πBB]])
     return {**models, 'payoffs_sr':matrix}
 
-# %% ../nbs/02_payoffs1.ipynb 9
+# %% ../nbs/02_payoffs1.ipynb 10
 def payoffs_sr_pfo_extension(model):
     """The short run payoffs for the DSAIR game with a chance of unsafe
     behaviour being spotted."""
@@ -51,16 +60,24 @@ def payoffs_sr_pfo_extension(model):
     πAB = -c + b/(s+1) * (1 - pfo) + pfo * b
     πBA = (1 - pfo) * s * b / (s+1)
     πBB = (1 - pfo**2) * b/2
+    
+    # Promote all stacks to 3D arrays
+    πAA = πAA[:, None, None]
+    πAB = πAB[:, None, None]
+    πBA = πBA[:, None, None]
+    πBB = πBB[:, None, None]
     matrix = np.block([[πAA, πAB],
                        [πBA, πBB]])
     return {**model, 'payoffs_sr':matrix}
 
-# %% ../nbs/02_payoffs1.ipynb 11
+# %% ../nbs/02_payoffs1.ipynb 12
 def payoffs_lr(model):
     """The long run average payoffs for the DSAIR game."""
-    s, p, B, W = [model[k] for k in ['s', 'p', 'B', 'W']]
+    # All 1D arrays must be promoted to 3D Arrays for broadcasting
+    s, p, B, W = [model[k][:, None, None]
+                  for k in ['s', 'p', 'B', 'W']]
     πAA,πAB,πBA,πBB = [model['payoffs_sr'][:, i:i+1, j:j+1]
-                       for i in range(2) for j in range(2)]
+                       for i in range(2) for j in range(2)]    
     πAA = πAA + B/(2*W)
     πAB = πAB
     πBA = p*(s*B/W + πBA)
@@ -69,10 +86,12 @@ def payoffs_lr(model):
                         [πBA, πBB]])
     return {**model, 'payoffs': payoffs}
 
-# %% ../nbs/02_payoffs1.ipynb 13
+# %% ../nbs/02_payoffs1.ipynb 14
 def payoffs_lr_peer_punishment(model):
     """The long run average payoffs for the DSAIR game with peer punishment."""
-    s,b,c, p, B, W = [model[k] for k in ['s', 'b', 'c', 'p', 'B', 'W']]
+    # All 1D arrays must be promoted to 3D Arrays for broadcasting
+    s,b,c, p, B, W = [model[k][:, None, None]
+                      for k in ['s', 'b', 'c', 'p', 'B', 'W']]
     α, γ, ϵ = [model[k] for k in ['α', 'γ', 'ϵ']]
     πAA,πAB,πBA,πBB = [model['payoffs_sr'][:, i:i+1, j:j+1]
                        for i in range(2) for j in range(2)]
@@ -120,10 +139,12 @@ def payoffs_lr_peer_punishment(model):
                        ])
     return {**model, 'payoffs':matrix}
 
-# %% ../nbs/02_payoffs1.ipynb 17
+# %% ../nbs/02_payoffs1.ipynb 18
 def payoffs_lr_peer_reward(model):
     """The long run average payoffs for the DSAIR game with peer punishment."""
-    s,b,c, p, B, W = [model[k] for k in ['s', 'b', 'c', 'p', 'B', 'W']]
+    # All 1D arrays must be promoted to 3D Arrays for broadcasting
+    s,b,c, p, B, W = [model[k][:, None, None]
+                      for k in ['s', 'b', 'c', 'p', 'B', 'W']]
     α, γ, ϵ = [model[k] for k in ['α', 'γ', 'ϵ']]
     πAA,πAB,πBA,πBB = [model['payoffs_sr'][:, i:i+1, j:j+1]
                        for i in range(2) for j in range(2)]
@@ -145,11 +166,13 @@ def payoffs_lr_peer_reward(model):
                        ])
     return {**model, 'payoffs':matrix}
 
-# %% ../nbs/02_payoffs1.ipynb 19
+# %% ../nbs/02_payoffs1.ipynb 20
 def payoffs_lr_voluntary(model):
     """The long run average payoffs for the DSAIR game with voluntary
     commitments."""
-    s,b,c, p, B, W = [model[k] for k in ['s', 'b', 'c', 'p', 'B', 'W']]
+    # All 1D arrays must be promoted to 3D Arrays for broadcasting
+    s,b,c, p, B, W = [model[k][:, None, None]
+                      for k in ['s', 'b', 'c', 'p', 'B', 'W']]
     α, γ, ϵ = [model[k] for k in ['α', 'γ', 'ϵ']]
     πAA,πAB,πBA,πBB = [model['payoffs_sr'][:, i:i+1, j:j+1]
                        for i in range(2) for j in range(2)]

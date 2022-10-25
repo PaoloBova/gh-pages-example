@@ -8,6 +8,7 @@ __all__ = ['T_type', 'fermi_learning', 'fixation_rate', 'ModelTypeEGT', 'build_t
 from nbdev.showdoc import *
 import fastcore.test
 from .utils import *
+from .types import *
 import typing
 
 import numpy as np
@@ -48,10 +49,10 @@ class ModelTypeEGT():
     def __init__(self, 
                  Z: int, # the size of the population
                  strategy_set: list[str], # the set of strategies in the model
-                 β: nptyping.NDArray, # the learning rate
-                 payoffs: nptyping.NDArray, # the payoffs of the game
-                 transition_matrix: nptyping.NDArray=None, # the model's transition matrix
-                 ergodic: nptyping.NDArray=None, # ergodic distribution of the model's markov chain
+                 β: Array1D, # the learning rate
+                 payoffs: Array3D, # the payoffs of the game
+                 transition_matrix: Array3D=None, # the model's transition matrix
+                 ergodic: Array2D=None, # ergodic distribution of the model's markov chain
                 ):
         pass
 

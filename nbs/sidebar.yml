@@ -7,4 +7,5 @@ website:
       - 03_analytical_conditions.ipynb
       - 10_analysis_dsair.ipynb
       - plots_utils.ipynb
+      - types.ipynb
       - utils.ipynb
