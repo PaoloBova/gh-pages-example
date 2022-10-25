@@ -97,7 +97,8 @@ def build_transition_matrix(models:dict # A dictionary that contains the paramet
     return {**models, "transition_matrix": M}
 
 # %% ../nbs/01_methods.ipynb 54
-def find_ergodic_distribution(models):
+def find_ergodic_distribution(models:dict # A dictionary that contains the parameters in `ModelTypeEGT`
+                             ):
     """Find the ergodic distribution of a markov chain with the
     given transition matrix."""
     
@@ -115,7 +116,8 @@ def find_ergodic_distribution(models):
     return {**models, 'ergodic':ergodic}
 
 # %% ../nbs/01_methods.ipynb 65
-def markov_chain(models):
+def markov_chain(models:dict # A dictionary that contains the parameters in `ModelTypeEGT`
+                ):
     """Find the ergodic distribution of the evolutionary
     game given by each model in models."""
     return thread_macro(models,
