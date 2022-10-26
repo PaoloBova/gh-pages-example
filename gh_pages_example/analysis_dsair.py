@@ -22,7 +22,7 @@ import pandas
 import seaborn as sns 
 
 # %% ../nbs/10_analysis_dsair.ipynb 6
-valid_dtypes = typing.Union[float, list[float], np.ndarray|dict]
+valid_dtypes = typing.Union[float, list[float], np.ndarray, dict]
 def build_DSAIR(b:valid_dtypes=4, # benefit: The size of the per round benefit of leading the AI development race, b>0
                 c:valid_dtypes=1, # cost: The cost of implementing safety recommendations per round, c>0
                 s:valid_dtypes={"start":1, # speed: The speed advantage from choosing to ignore safety recommendations, s>1
