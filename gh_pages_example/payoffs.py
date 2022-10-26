@@ -76,7 +76,7 @@ def payoffs_lr_peer_punishment(models:dict, # A dictionary containing the items 
     # All 1D arrays must be promoted to 3D Arrays for broadcasting
     s,b,c, p, B, W = [models[k][:, None, None]
                       for k in ['s', 'b', 'c', 'p', 'B', 'W']]
-    α, γ, ϵ = [models[k] for k in ['α', 'γ', 'ϵ']]
+    α, γ = [models[k] for k in ['α', 'γ']]
     πAA,πAB,πBA,πBB = [models['payoffs_sr'][:, i:i+1, j:j+1]
                        for i in range(2) for j in range(2)]
     
@@ -99,14 +99,14 @@ def payoffs_lr_peer_punishment(models:dict, # A dictionary containing the items 
     B_s = np.where(sanctioner_wins, B, np.where(punished_draws, B/2, 0))
     B_p = np.where(punished_wins, B, np.where(punished_draws, B/2, 0))
     b_s = np.where(both_speeds_positive,
-                   b * (s - α)/(s-γ + s - α),
+                   b * (s - α)/(s - γ + s - α),
                    np.where(only_sanctioner_speed_positive, b, 0))
     b_p = np.where(both_speeds_positive,
-                   b * (s - γ)/(s-γ + s - α),
+                   b * (s - γ)/(s - γ + s - α),
                    np.where(only_punisher_speed_positive, b, 0))
 
-    sanctioner_payoff = (1 / R) * (πAB + B_s + (R-1)*(b_s - c)) - ϵ
-    punished_payoff = (p_loss / R) * (πBA + B_p + (R-1)*b_p) - ϵ
+    sanctioner_payoff = (1 / R) * (πAB + B_s + (R-1)*(b_s - c))
+    punished_payoff = (p_loss / R) * (πBA + B_p + (R-1)*b_p)
     
     ΠAA = πAA + B/(2*W)
     ΠAB = p*(s*B/W + πBA)
@@ -130,7 +130,7 @@ def payoffs_lr_peer_reward(models:dict, # A dictionary containing the items in `
     # All 1D arrays must be promoted to 3D Arrays for broadcasting
     s,b,c, p, B, W = [models[k][:, None, None]
                       for k in ['s', 'b', 'c', 'p', 'B', 'W']]
-    α, γ, ϵ = [models[k] for k in ['α', 'γ', 'ϵ']]
+    α, γ = [models[k] for k in ['α', 'γ']]
     πAA,πAB,πBA,πBB = [models['payoffs_sr'][:, i:i+1, j:j+1]
                        for i in range(2) for j in range(2)]
     

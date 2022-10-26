@@ -3,11 +3,13 @@
 # %% auto 0
 __all__ = ['thread_macro', 'broadcast_concatenate_axes', 'build_parameter_grid_from_axes']
 
-# %% ../nbs/utils.ipynb 3
+# %% ../nbs/utils.ipynb 2
+import functools
+from nbdev.showdoc import *
 import nptyping
 import numpy as np
 
-# %% ../nbs/utils.ipynb 4
+# %% ../nbs/utils.ipynb 3
 def thread_macro(current_value, *funcs, identifier="self"):
     """Pipes current_value through each function in funcs.
 
@@ -35,7 +37,7 @@ def thread_macro(current_value, *funcs, identifier="self"):
             current_value = func(current_value)
     return current_value
 
-# %% ../nbs/utils.ipynb 5
+# %% ../nbs/utils.ipynb 4
 def broadcast_concatenate_axes(ax1, ax2):
     """Broadcast both numpy axes and concatenate along last dimension"""
     ax1new = ax1
@@ -51,7 +53,7 @@ def broadcast_concatenate_axes(ax1, ax2):
     ax = np.concatenate((ax1new, ax2new), axis=-1)
     return ax
 
-# %% ../nbs/utils.ipynb 6
+# %% ../nbs/utils.ipynb 5
 def build_parameter_grid_from_axes(axes):
     """Build a numpy array with all combinations of elements specified in axes.
 

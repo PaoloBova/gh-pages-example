@@ -22,25 +22,36 @@ import pandas
 import seaborn as sns 
 
 # %% ../nbs/10_analysis_dsair.ipynb 6
-def fig1_data(b:float=4,
-              c:float=1,
-              B:float=10**4,
-              W:float=100,
-              β:float=0.01,
-              Z:int=100,
-              S:list[str]=["AS", "AU"],
-              collective:float=1) -> dict: # A dictionary containing the items in `ModelTypeDSAIR`
+def fig1_data(b:float=4, # benefit: The size of the per round benefit of leading the AI development race, b>0
+              c:float=1, # cost: The cost of implementing safety recommendations per round, c>0
+              s:list[float]=[1,5.1,0.1], # speed: The speed advantage from choosing to ignore safety recommendations, s>1
+              p:list[float]=[0,1.02,0.02], # avoid_risk: The probability that unsafe firms avoid an AI disaster, p ∈ [0, 1]
+              B:float=10**4, # prize: The size of the prize from winning the AI development race, B>>b
+              W:float=100, # timeline: The anticipated timeline until the development race has a winner if everyone behaves safely, W ∈ [10, 10**6]
+              pfo:float=0, # detection risk: The probability that firms who ignore safety precautions are found out, pfo ∈ [0, 1]
+              α:float=0, # the cost of rewarding/punishing a peer
+              γ:float=0, # the effect of a reward/punishment on a developer's speed
+              ϵ:float=0, # commitment_cost: The cost of setting up and maintaining a voluntary commitment, ϵ > 0
+              ω:float=0, # noise: Noise in arranging an agreement, with some probability they fail to succeed in making an agreement, ω ∈ [0, 1]
+              collective:float=1, # collective_risk: the likelihood that a disaster affects all actors
+              β:float=0.01, # learning_rate: the rate at which players imitate each other
+              Z:int=100, # population_size: the number of players in the evolutionary game
+              S:list[str]=["AS", "AU"], # strategy_set: the set of available strategies
+              excluded_args=['Z', 'S'], # a list of arguments that should be returned as they are
+             ) -> dict: # A dictionary containing items from `ModelTypeDSAIR` and `ModelTypeEGT`
     """Initialise baseline DSAIR models which vary `s` and `p`. By default,
-    we create models for replicating Figure 1 of The Anh et al. 2021."""
-    namesofvalues=['s','b','c','p','B','W','β','collective']
-    matchingvalues = np.array([[s,b,c,p,B,W,β,collective]
-                               for s in np.arange(1,5.1,0.1)
-                               for p in np.arange(0,1.02,0.02)])
-    models = {k:v for k, v in zip(namesofvalues, matchingvalues.T)}
-    models = {**models,
-              'Z':Z, # Z should be a scalar
-              'strategy_set':S # S should be a list of strings
-             }
+    we create models for replicating Figure 1 of Han et al. 2021."""
+    
+    saved_args = locals()
+    grid = build_parameter_grid_from_axes([np.arange(*s),
+                                           np.arange(*p)])
+    models = {k:np.array([v for _ in grid])
+              for k,v in saved_args.items()
+              if k not in excluded_args}
+    models['s'] = grid[:, 0]
+    models['p'] = grid[:, 1]
+    models['Z'] = Z
+    models['strategy_set'] = S
     return models
 
 # %% ../nbs/10_analysis_dsair.ipynb 8

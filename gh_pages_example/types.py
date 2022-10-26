@@ -45,7 +45,10 @@ class ModelTypeDSAIR():
                  B: Array1D, # prize: The size of the prize from winning the AI development race, B>>b
                  W: Array1D, # timeline: The anticipated timeline until the development race has a winner if everyone behaves safely, W ∈ [10, 10**6]
                  pfo: Array1D=None, # detection risk: The probability that firms who ignore safety precautions are found out, pfo ∈ [0, 1]
+                 α: Array1D=None, # the cost of rewarding/punishing a peer
+                 γ: Array1D=None, # the effect of a reward/punishment on a developer's speed
                  ϵ: Array1D=None, # commitment_cost: The cost of setting up and maintaining a voluntary commitment, ϵ > 0
                  ω: Array1D=None, # noise: Noise in arranging an agreement, with some probability they fail to succeed in making an agreement, ω ∈ [0, 1]
+                 collective: Array1D=None, # collective_risk: the likelihood that a disaster affects all actors
                 ):
         pass
