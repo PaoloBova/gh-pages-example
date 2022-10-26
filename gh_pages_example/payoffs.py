@@ -76,7 +76,7 @@ def payoffs_lr_peer_punishment(models:dict, # A dictionary containing the items 
     # All 1D arrays must be promoted to 3D Arrays for broadcasting
     s,b,c, p, B, W = [models[k][:, None, None]
                       for k in ['s', 'b', 'c', 'p', 'B', 'W']]
-    α, γ = [models[k] for k in ['α', 'γ']]
+    α, γ = [models[k][:, None, None] for k in ['α', 'γ']]
     πAA,πAB,πBA,πBB = [models['payoffs_sr'][:, i:i+1, j:j+1]
                        for i in range(2) for j in range(2)]
     
@@ -109,7 +109,7 @@ def payoffs_lr_peer_punishment(models:dict, # A dictionary containing the items 
     punished_payoff = (p_loss / R) * (πBA + B_p + (R-1)*b_p)
     
     ΠAA = πAA + B/(2*W)
-    ΠAB = p*(s*B/W + πBA)
+    ΠAB = πAB
     ΠAC = πAA + B/(2*W)
     ΠBA = p*(s*B/W + πBA)
     ΠBB = p*(s*B/(2*W) + πBB)
@@ -130,7 +130,7 @@ def payoffs_lr_peer_reward(models:dict, # A dictionary containing the items in `
     # All 1D arrays must be promoted to 3D Arrays for broadcasting
     s,b,c, p, B, W = [models[k][:, None, None]
                       for k in ['s', 'b', 'c', 'p', 'B', 'W']]
-    α, γ = [models[k] for k in ['α', 'γ']]
+    α, γ = [models[k][:, None, None] for k in ['α', 'γ']]
     πAA,πAB,πBA,πBB = [models['payoffs_sr'][:, i:i+1, j:j+1]
                        for i in range(2) for j in range(2)]
     
@@ -159,7 +159,7 @@ def payoffs_lr_voluntary(models:dict, # A dictionary containing the items in `Mo
     # All 1D arrays must be promoted to 3D Arrays for broadcasting
     s,b,c, p, B, W = [models[k][:, None, None]
                       for k in ['s', 'b', 'c', 'p', 'B', 'W']]
-    α, γ, ϵ = [models[k] for k in ['α', 'γ', 'ϵ']]
+    α, γ, ϵ = [models[k][:, None, None] for k in ['α', 'γ', 'ϵ']]
     πAA,πAB,πBA,πBB = [models['payoffs_sr'][:, i:i+1, j:j+1]
                        for i in range(2) for j in range(2)]
     
