@@ -14,6 +14,11 @@ website:
   navbar:
     background: primary
     search: true
+    collapse-below: lg
+    right:
+      - icon: github
+        href: "https://github.com/paolobova/gh-pages-example"
+        aria-label: Github respository
   sidebar:
     style: floating
 
