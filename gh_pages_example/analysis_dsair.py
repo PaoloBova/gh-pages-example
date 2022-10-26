@@ -46,7 +46,8 @@ def fig1_data(b:float=4,
 # %% ../nbs/10_analysis_dsair.ipynb 8
 models = fig1_data()
 
-# %% ../nbs/10_analysis_dsair.ipynb 11
+# %% ../nbs/10_analysis_dsair.ipynb 10
+#| echo: true
 results = thread_macro(models,
                        payoffs_sr,
                        payoffs_lr,
@@ -55,7 +56,7 @@ results = thread_macro(models,
                        markov_chain,
                       )
 
-# %% ../nbs/10_analysis_dsair.ipynb 15
+# %% ../nbs/10_analysis_dsair.ipynb 14
 flat_results = {k:results[k] for k in ['s','b','c','p','B','W','β',
                                        'threshold_society_prefers_safety',
                                        'threshold_risk_dominant_safety']}
@@ -65,3 +66,13 @@ for i, strategy in enumerate(["AS", "AU"]):
     flat_results[strategy + "_frequency"] = results['ergodic'][:,i]
     
 df = pandas.DataFrame(flat_results)
+
+# %% ../nbs/10_analysis_dsair.ipynb 26
+models = fig1_data(b=4,
+                   c=1,
+                   B=10**4,
+                   W=100,
+                   β=0.01,
+                   Z=100,
+                   S=["AS", "AU"],
+                   collective=1)
