@@ -16,11 +16,11 @@ display in the documentation or you can use them to solve your own
 models.
 
 The most important function is
-[`markov_chain`](https://PaoloBova.github.io/gh-pages-example/methods.html#markov_chain)
+[`markov_chain`](https://PaoloBova.github.io/gh-pages-example/Methods/methods.html#markov_chain)
 which passes our models through
-[`build_transition_matrix`](https://PaoloBova.github.io/gh-pages-example/methods.html#build_transition_matrix)
+[`build_transition_matrix`](https://PaoloBova.github.io/gh-pages-example/Methods/methods.html#build_transition_matrix)
 and
-[`find_ergodic_distribution`](https://PaoloBova.github.io/gh-pages-example/methods.html#find_ergodic_distribution).
+[`find_ergodic_distribution`](https://PaoloBova.github.io/gh-pages-example/Methods/methods.html#find_ergodic_distribution).
 
 Read the [documentation of the available
 methods](https://paolobova.github.io/gh-pages-example/methods.html) to
@@ -39,6 +39,6 @@ target="_blank" style="float:right; font-size:smaller">source</a>
 Find the ergodic distribution of the evolutionary game given by each
 model in models.
 
-|        | **Type** | **Details**                                                                                                                           |
-|--------|----------|---------------------------------------------------------------------------------------------------------------------------------------|
-| models | dict     | A dictionary that contains the parameters in [`ModelTypeEGT`](https://PaoloBova.github.io/gh-pages-example/methods.html#modeltypeegt) |
+|        | **Type** | **Details**                                                                                                                                   |
+|--------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| models | dict     | A dictionary that contains the parameters in [`ModelTypeEGT`](https://PaoloBova.github.io/gh-pages-example/Methods/methods.html#modeltypeegt) |

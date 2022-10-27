@@ -1,11 +1,14 @@
 project:
   type: website
+  preview:
+    port: 3000
 
 format:
   html:
-    theme: cosmo
+    theme: cerulean
     css: styles.css
     toc: true
+    toc-depth: 4
 
 website:
   twitter-card: true
@@ -20,6 +23,16 @@ website:
         href: "https://github.com/paolobova/gh-pages-example"
         aria-label: Github respository
   sidebar:
-    style: floating
+    style: "docked"
+    background: "dark"
+    contents:
+      - auto: "/*.ipynb"
+      - section: Methods
+        contents: "Methods/*.ipynb*"
+      - section: Payoffs
+        contents: "Payoffs/*.ipynb*"
+      - section: Analysis
+        contents: "Analysis/*.ipynb"
 
-metadata-files: [nbdev.yml, sidebar.yml]
+
+metadata-files: [nbdev.yml]

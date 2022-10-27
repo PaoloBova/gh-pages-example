@@ -3,10 +3,16 @@ website:
     contents:
       - index.ipynb
       - 01_methods.ipynb
-      - 02_payoffs1.ipynb
       - 03_analytical_conditions.ipynb
-      - 10_analysis_dsair.ipynb
       - plots_utils.ipynb
       - references.ipynb
       - types.ipynb
       - utils.ipynb
+      - section: Analysis
+        contents:
+          - Analysis/index.qmd
+          - Analysis/10_analysis_dsair.ipynb
+      - section: Payoffs
+        contents:
+          - Payoffs/index.qmd
+          - Payoffs/02_payoffs1.ipynb
