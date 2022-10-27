@@ -16,3 +16,11 @@ website:
         contents:
           - Payoffs/index.qmd
           - Payoffs/02_payoffs1.ipynb
+      - section: blog
+        contents:
+          - blog/index.qmd
+          - section: posts
+            contents:
+              - section: 2022-10-27-blog1
+                contents:
+                  - blog/posts/2022-10-27-blog1/index.qmd

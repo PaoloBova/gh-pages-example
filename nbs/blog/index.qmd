@@ -1,0 +1,11 @@
+---
+title: Phd Blog
+subtitle: Thoughts on my Phd
+listing:
+  sort: "date desc"
+  sort-ui: false
+  filter-ui: false
+  categories: true
+  feed: true
+page-layout: full
+---

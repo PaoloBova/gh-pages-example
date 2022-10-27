@@ -18,6 +18,9 @@ website:
     background: primary
     search: true
     collapse-below: lg
+    left:
+      - text: "Blog"
+        href: blog/index.qmd
     right:
       - icon: github
         href: "https://github.com/paolobova/gh-pages-example"
