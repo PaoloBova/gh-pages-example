@@ -1,39 +1,37 @@
 ---
-author: [Hamel Husain, Jeremy Howard]
-date: 2022-07-28
+author: Paolo Bova
+date: 2022-11-01
 image:  /images/placeholder.png
-description: Our favorite tool for software engineering productivity--nbdev, now re-written with Quarto
-tags: [technical]
-title: 'nbdev+Quarto: A new secret weapon for productivity'
+description: A review of the recommendations provided by the team at the Berkley Existential Risk Initiative.
+tags: [policy]
+title: 'Thoughts on: Recommendations for the AI RMF'
 ---
 
-_[Originally posted](https://www.fast.ai/2022/07/28/nbdev-v2/) on the fast.ai blog_
-
-![A single notebook can create a python module, tests, CI, pypi/conda packages, and more.](/images/placeholder.png)
+![Regulatory roadmap image](/images/placeholder.png)
 
 
-## Our new secret weapon for productivity
+## What is NIST's AI RMF?
 
-Today we’re excited to announce that we’ve teamed up with Quarto to give [nbdev](https://nbdev.fast.ai) superpowers. nbdev offers Python programmers a common set of tools for using Jupyter notebooks to:
+The US National Institute for Standards and Technology (NIST) is preparing an initial draft of their Risk Managament Framework for AI (the AI RMF). This is a non-binding set of standards that developers of AI are encouraged to follow. These standards aim to provided recommendations that companies can follow to minimise regulatory uncertainty, even if they operate across nations.
 
-* Write & distribute software packages
-* Test code, and
-* Author documentation and technical articles
+Some questions which arise:
 
-Although notebooks are already widely used for once-off exploratory work, it’s less well-known that they are perfectly capable of writing quality software. In fact, we’ve used nbdev for a wide range of software projects over the last three years, including [deep learning libraries,](https://github.com/fastai/fastai) [API clients](https://github.com/fastai/ghapi), [Python language extensions](https://github.com/fastai/fastcore), [terminal user interfaces](https://github.com/nat/ghtop), and more. We discovered that it is not only capable of writing great software but that it **has also increased our productivity by 300% or more**. With nbdev, developers simply write notebooks with lightweight markup and get high-quality documentation, tests, continuous integration, and packaging for free!  Nbdev has allowed us to maintain and scale many[ open source projects](https://github.com/fastai). Pull requests are often accompanied by detailed documentation and tests–contributors simply write notebooks.
+* Do organisations follow NIST recommendations? Which ones?
+* If organisations do not follow NIST recommendations, are there any soft pressures to encourage them to reconsider?
+* Is there precedence for NIST to accept recommendations from academic institutions into their guidance for industry, as the current paper hopes to achieve?
 
-This is why we’re excited to share nbdev v2. It’s rewritten from the ground up, with much-anticipated features including:
+In addition, the topic of regulating AI systems raises a number of questions which are important to address:
 
-* Interoperation with non-nbdev codebases for tasks like documentation
-* Support for any static site generator
-* Wide variety of output mediums such as blogs, papers, slides, and websites
-* A faster Jupyter kernel, which also means faster tests
-* Cleaner and more extensible API, which supports custom directives, custom module exporters, and more
+* Is it reasonable to expect that AI systems have a sufficiently high probability of being powerful enough to risk catastrophic outcomes on a relevant timeline?
+* Are these risks more likely if there is competitive and geopolitical incentives to develop AI capabilities faster?
+* What do other academics think?
+* What do other policy makers think?
+* Is there any reason to expect the EU AI Act and US regulation to coordinate?
+
 
 ## nbdev in industry
 
 We have piloted nbdev at several companies. We were delighted to receive the following feedback, which fits our own experience using and developing nbdev:
-
 
 ::: {layout="[70,30]"}
 **[David Berg](https://www.linkedin.com/in/david-j-berg/), on using nbdev for internal documentation at Netflix:** 
