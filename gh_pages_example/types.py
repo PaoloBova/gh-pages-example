@@ -47,7 +47,7 @@ class ModelTypeDSAIR():
                  pfo: Array1D=None, # detection risk: The probability that firms who ignore safety precautions are found out, pfo ∈ [0, 1]
                  α: Array1D=None, # the cost of rewarding/punishing a peer
                  γ: Array1D=None, # the effect of a reward/punishment on a developer's speed
-                 ϵ: Array1D=None, # commitment_cost: The cost of setting up and maintaining a voluntary commitment, ϵ > 0
+                 epsilon: Array1D=None, # commitment_cost: The cost of setting up and maintaining a voluntary commitment, ϵ > 0
                  ω: Array1D=None, # noise: Noise in arranging an agreement, with some probability they fail to succeed in making an agreement, ω ∈ [0, 1]
                  collective_risk: Array1D=None, # The likelihood that a disaster affects all actors
                 ):
