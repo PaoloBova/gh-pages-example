@@ -77,7 +77,7 @@ class ModelTypeEGT():
                 ):
         pass
 
-# %% ../nbs/01_methods.ipynb 55
+# %% ../nbs/01_methods.ipynb 56
 @multi
 def build_transition_matrix(models:dict # A dictionary that contains the parameters in `ModelTypeEGT`
                            ):
@@ -118,7 +118,7 @@ def build_transition_matrix(models:dict # A dictionary that contains the paramet
             M[:, row_ind, row_ind] -= ρ / max(1, len(S)-1)
     return {**models, "transition_matrix": M}
 
-# %% ../nbs/01_methods.ipynb 56
+# %% ../nbs/01_methods.ipynb 57
 @method(build_transition_matrix, 'unstable')
 def build_transition_matrix(models:dict # A dictionary that contains the parameters in `ModelTypeEGT`
                            ):
@@ -186,21 +186,20 @@ def build_transition_matrix(models:dict # A dictionary that contains the paramet
     """Build a transition matrix between all monomorphic states
     when there are multiple populations.    
     """
-    Z, S, β = [models[k] for k in ['Z', 'recurrent_state_space', 'β']]
-    valid_transitions = models['valid_transitions']
-    π = models['payoffs']
-    M = np.zeros((payoffs.shape[0], len(S), len(S)))
+    Z, S, β = [models[k] for k in ['Z', 'strategy_set', 'β']]
+    strategy_contests = models['strategy_contests']
+    payoffs = models['payoffs']
+    M = np.zeros((list(payoffs.values())[0].shape[0], len(S), len(S)))
     for row_ind in range(M.shape[-1]):
         M[:, row_ind, row_ind] += 1
-    for transition in valid_transitions.values():
-        strategy_profile_indices = transition['strategy_profile_indices']
-        player_index = transition['player_index']
-        row_ind = transition['row_ind']
-        col_ind = transition['col_ind']
-        πAA = π[:, strategy_profile_indices['AA'], player_index]
-        πAB = π[:, strategy_profile_indices['AB'], player_index]
-        πBA = π[:, strategy_profile_indices['BA'], player_index]
-        πBB = π[:, strategy_profile_indices['BB'], player_index]
+    for contest in strategy_contests.values():
+        π = payoffs[contest['target']]
+        row_ind = contest['payoff_indices'][0]
+        col_ind = contest['payoff_indices'][1]
+        πAA = π[:, row_ind, row_ind]
+        πAB = π[:, row_ind, col_ind]
+        πBA = π[:, col_ind, row_ind]
+        πBB = π[:, col_ind, col_ind]
         ΠA = [πAA*(Z-k-1)/(Z-1) + πAB*k/(Z-1)
               for k in range(1, Z)]
         ΠB = [πBA*(Z-k)/(Z-1)  + πBB*(k-1)/(Z-1)
@@ -208,11 +207,6 @@ def build_transition_matrix(models:dict # A dictionary that contains the paramet
         # We use a numerically stable method to find the fixation rate, ρ.
         # ρ is the probability that mutant B successfully invades A
         ρ = fixation_rate_stable(ΠA, ΠB, β)
-        # We have to divide this rate by the number of possible mutations
-        n_mutations = 0
-        for vt in valid_transitions.values():
-            if vt['row_ind'] == row_ind:
-                n_mutations += 1
-        M[:, row_ind, col_ind] = ρ / n_mutations
-        M[:, row_ind, row_ind] -= ρ / n_mutations
+        M[:, row_ind, col_ind] = ρ / max(1, len(S)-1)
+        M[:, row_ind, row_ind] -= ρ / max(1, len(S)-1)
     return {**models, 'transition_matrix':M}
