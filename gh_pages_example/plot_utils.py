@@ -41,6 +41,7 @@ def plot_strategy_distribution(data, # The dataset containing data on parameters
 
 # %% ../nbs/plots_utils.ipynb 4
 def plot_heatmap(table, # A pivot table, created using `pandas.pivot` function
+                 figure_object=None,
                  xlabel="x",
                  ylabel="y",
                  zlabel="z",
@@ -49,7 +50,10 @@ def plot_heatmap(table, # A pivot table, created using `pandas.pivot` function
                  zmax=1,
                 ):
     """Plot heatmap using the index, columns, and values from `table`."""
-    heatmap, ax = plt.subplots()
+    if figure_object==None:
+        heatmap, ax = plt.subplots()
+    else:
+        heatmap, ax = figure_object
     im = ax.imshow(table.values,
                    cmap=cmap,
                    extent=[table.columns.min(),
@@ -66,3 +70,4 @@ def plot_heatmap(table, # A pivot table, created using `pandas.pivot` function
 
     cbar = heatmap.colorbar(im)
     cbar.ax.set_ylabel(zlabel)
+    return heatmap, ax

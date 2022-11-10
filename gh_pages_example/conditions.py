@@ -87,5 +87,5 @@ def threshold_ps_r_d_au(models):
             + (1 - pfo**2)*b/2
             + punished_payoff_without_ploss)
          )
-    pr = 1 - p
+    pr = np.maximum(0, 1 - p)
     return {**models, 'threshold_ps_risk_dominates_au': pr}
