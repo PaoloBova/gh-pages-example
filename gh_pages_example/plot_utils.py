@@ -11,6 +11,7 @@ from nbdev.showdoc import *
 import nptyping
 import numpy as np
 import pandas
+import plotly.graph_objects as go
 
 # %% ../nbs/plots_utils.ipynb 3
 def plot_strategy_distribution(data, # The dataset containing data on parameters and the strategy distribution
