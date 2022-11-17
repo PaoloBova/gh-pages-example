@@ -4,7 +4,7 @@
 __all__ = ['T_type', 'result', 'allowed_sectors', 'sector_strategies', 'n_players', 'n_strategies', 'models', 'expected',
            'transition_indices', 'result1', 'result2', 'fermi_learning', 'fixation_rate', 'fixation_rate_stable',
            'ModelTypeEGT', 'build_transition_matrix', 'find_ergodic_distribution', 'markov_chain',
-           'create_all_profiles', 'profile_filter', 'valid_transition']
+           'create_all_profiles', 'profile_filter', 'valid_transition', 'get', 'apply_profile_filters']
 
 # %% ../nbs/01_methods.ipynb 1
 from .utils import *
@@ -542,7 +542,21 @@ fastcore.test.test_eq(valid_transition("1-1-1", "0-0-0"), False)
 fastcore.test.test_eq(valid_transition("1-1-1", "22-1-3"), False)
 fastcore.test.test_eq(valid_transition("1-1-1", "1-1-1"), False) # Even though possible, self transitions are marked as false since we never compute them directly
 
+# %% ../nbs/01_methods.ipynb 142
+def get(m:dict, k:str):
+    "Get attribute k from dictionary m."
+    return m.get(k)
+
 # %% ../nbs/01_methods.ipynb 143
+def apply_profile_filters(models):
+    "Apply all profile filters listed in `profile_filters` in `models`."
+    for rule in models.get('profile_filters', 
+                           ["allowed_sectors",
+                            "relevant_to_transition"]):
+        models = profile_filter({**models, "profile_filter_rule": rule})
+    return models
+
+# %% ../nbs/01_methods.ipynb 145
 @method(build_transition_matrix, 'multiple-populations-v2')
 def build_transition_matrix(models:dict # A dictionary that contains the parameters in `ModelTypeEGT`
                            ):
@@ -551,31 +565,21 @@ def build_transition_matrix(models:dict # A dictionary that contains the paramet
     """
     Z, S, β = [models[k] for k in ['Z', 'recurrent_state_space', 'β']]
     π = models['payoffs']
-    compute_success_fn = models['compute_success_fn']
     M = np.zeros((payoffs.shape[0], len(S), len(S)))
     for row_ind in range(M.shape[-1]):
         M[:, row_ind, row_ind] += 1
-    transitions = [(i, j) for i in range(len(S)) for j in range(len(S))]
-    for row_ind, col_ind in transitions:
+    transition_inds = [(i, j) for i in range(len(S)) for j in range(len(S))]
+    for row_ind, col_ind in transition_inds:
         current_state, new_state = S[row_ind], S[col_ind]
         if current_state == new_state:
             continue
         if not valid_transition(current_state, new_state):
             continue
-        relevant_profiles = thread_macro(models,
-                                         (assoc, "profile_filter_rule",
-                                                 "relevant_to_transition"),
-                                         profile_filter,
-                                         (assoc, "profile_filter_rule",
-                                                 "allowed_sectors"),
-                                         profile_filter,
-                                         (get, "profiles_filtered"),
-                                        )
-        ΠA, ΠB = compute_success_fn({**models,
-                                     "relevant_profiles": relevant_profiles})
+        ΠA, ΠB = compute_success(assoc(models,
+                                       "transition_indices",
+                                       [current_state, new_state]))
         ρ = fixation_rate_stable(ΠA, ΠB, β)
-        n_mutations = sum(valid_transition(current_state, possible state)
-                          for possible_state in S)
+        n_mutations = sum(valid_transition(current_state, s_alt) for s_alt in S)
         M[:, row_ind, col_ind] = ρ / n_mutations
         M[:, row_ind, row_ind] -= ρ / n_mutations
     return {**models, 'transition_matrix':M}
