@@ -4,6 +4,7 @@ website:
       - index.ipynb
       - 01_methods.ipynb
       - 03_analytical_conditions.ipynb
+      - data_utils.ipynb
       - plots_utils.ipynb
       - references.ipynb
       - types.ipynb
