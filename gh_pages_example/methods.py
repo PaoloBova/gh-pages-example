@@ -4,7 +4,8 @@
 __all__ = ['T_type', 'result', 'allowed_sectors', 'sector_strategies', 'n_players', 'n_strategies', 'models', 'expected',
            'transition_indices', 'result1', 'result2', 'fermi_learning', 'fixation_rate', 'fixation_rate_stable',
            'ModelTypeEGT', 'build_transition_matrix', 'find_ergodic_distribution', 'markov_chain',
-           'create_all_profiles', 'profile_filter', 'valid_transition', 'get', 'apply_profile_filters']
+           'create_all_profiles', 'profile_filter', 'valid_transition', 'apply_profile_filters', 'compute_profile_dist',
+           'compute_success']
 
 # %% ../nbs/01_methods.ipynb 1
 from .utils import *
@@ -543,11 +544,6 @@ fastcore.test.test_eq(valid_transition("1-1-1", "22-1-3"), False)
 fastcore.test.test_eq(valid_transition("1-1-1", "1-1-1"), False) # Even though possible, self transitions are marked as false since we never compute them directly
 
 # %% ../nbs/01_methods.ipynb 142
-def get(m:dict, k:str):
-    "Get attribute k from dictionary m."
-    return m.get(k)
-
-# %% ../nbs/01_methods.ipynb 143
 def apply_profile_filters(models):
     "Apply all profile filters listed in `profile_filters` in `models`."
     for rule in models.get('profile_filters', 
@@ -555,6 +551,69 @@ def apply_profile_filters(models):
                             "relevant_to_transition"]):
         models = profile_filter({**models, "profile_filter_rule": rule})
     return models
+
+# %% ../nbs/01_methods.ipynb 143
+@multi
+def compute_profile_dist(models):
+    """Compute the probability distribution of the relevant profiles."""
+    return models.get['profile_dist_rule']
+
+@method(compute_profile_dist)
+def compute_profile_dist(models):
+    """Compute the probability distribution of the relevant profiles - default."""
+    chosen_strategy = models['chosen_strategy']
+    profiles = models['profiles_filtered']
+    profile_likelihood_rule = models['profile_likelihood_rule']
+    profile_distribution = {}
+    for profile in profiles:
+        profile_tuple = list(map(int, profile.split("-")))
+        agent_roles = [f"P{i+1}"
+                       for i, strategy in enumerate(profile_tuple[::-1])
+                       if strategy==chosen_strategy]
+        profile_distribution[profile] = {}
+        for agent_role in agent_roles:
+            likelihood = profile_likelihood_rule({**models,
+                                                  "profile": profile,
+                                                  "agent_role": agent_role})
+            profile_distribution[profile][agent_role] = likelihood
+    return profile_distribution
+
+# %% ../nbs/01_methods.ipynb 144
+@multi
+def compute_success(models):
+    """Compute the success of the two strategies under consideration."""
+    return models.get('compute_success_rule')
+
+@method(compute_success)
+def compute_success(models):
+    """Compute the success of the two strategies under consideration for each
+    number of k mutants implied by the transition."""
+    models = apply_profile_filters(models)
+    ind1, ind2 = models['transition_indices']
+    sector_strategies = models['sector_strategies']
+    allowed_sectors = models['allowed_sectors']
+    payoffs = models['payoffs']
+    
+    ind1_tuple = list(map(int, ind1.split("-")))
+    ind2_tuple = list(map(int, ind2.split("-")))
+    differ = [i1!=i2 for i1, i2 in zip(ind1_tuple, ind2_tuple)]
+    affected_sector = f"S{np.argmax(differ[::-1]) + 1}"
+    current_strategy = sector_strategies[affected_sector][ind1[np.argmax(differ)]]
+    mutant_strategy = sector_strategies[affected_sector][ind2[np.argmax(differ)]]
+    
+    dist1 = compute_profile_dist({**models,
+                                  'chosen_strategy': current_strategy})
+    dist2 = compute_profile_dist({**models,
+                                  'chosen_strategy': mutant_strategy})
+    success_A = 0
+    for profile, role_map in dist1.items():
+        for role, likelihood in role_map.items():
+            success_A += payoffs[profile][role] * likelihood
+    success_B = 0
+    for profile, role_map in dist2.items():
+        for role, likelihood in role_map.items():
+            success_B += payoffs[profile][role] * likelihood
+    return success_A, success_B
 
 # %% ../nbs/01_methods.ipynb 145
 @method(build_transition_matrix, 'multiple-populations-v2')
