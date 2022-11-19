@@ -78,6 +78,15 @@ class ModelTypeEGT():
         pass
 
 # %% ../nbs/01_methods.ipynb 56
+@multi
+def build_transition_matrix(models:dict # A dictionary that contains the parameters in `ModelTypeEGT`
+                           ):
+    """Build a transition matrix between all monomorphic states using the
+    fermi social learning rule."""
+    return models.get('dispatch-type')
+    
+
+@method(build_transition_matrix)
 def build_transition_matrix(models:dict # A dictionary that contains the parameters in `ModelTypeEGT`
                            ):
     """Build a transition matrix between all monomorphic states
@@ -105,17 +114,44 @@ def build_transition_matrix(models:dict # A dictionary that contains the paramet
             # We use a numerically stable method to find the fixation rate, ρ.
             # ρ is the probability that mutant B successfully invades A
             ρ = fixation_rate_stable(ΠA, ΠB, β)
-            # A less stable but still valid method is as follows:
-            # Tneg = [fermi_learning(ΠB[k-1], ΠA[k-1], β)
-            #         for k in range(1, Z)]
-            # Tplus = [fermi_learning(ΠA[k-1], ΠB[k-1], β)
-            #          for k in range(1, Z)]
-            # ρ = fixation_rate(Tplus, Tneg)
             M[:, row_ind, col_ind] = ρ / max(1, len(S)-1)
             M[:, row_ind, row_ind] -= ρ / max(1, len(S)-1)
     return {**models, "transition_matrix": M}
 
-# %% ../nbs/01_methods.ipynb 77
+# %% ../nbs/01_methods.ipynb 57
+@method(build_transition_matrix, 'unstable')
+def build_transition_matrix(models:dict # A dictionary that contains the parameters in `ModelTypeEGT`
+                           ):
+    """Build a transition matrix using a numerically unstable method."""
+    
+    Z, S, β = [models[k] for k in ['Z','strategy_set', 'β']]
+    π = models['payoffs']
+    n_models = π.shape[0]
+    M = np.zeros(( n_models, len(S), len(S)))
+    for row_ind, s in enumerate(S):
+        for col_ind, sₒ in enumerate(S):
+            if row_ind == col_ind:
+                M[:, row_ind, row_ind] += 1
+                # We calibrate these entries later so rows add up to 1
+                continue
+            πAA = π[:, row_ind, row_ind]
+            πAB = π[:, row_ind, col_ind]
+            πBA = π[:, col_ind, row_ind]
+            πBB = π[:, col_ind, col_ind]
+            ΠA = [πAA*(Z-k-1)/(Z-1) + πAB*k/(Z-1)
+                  for k in range(1, Z)]
+            ΠB = [πBA*(Z-k)/(Z-1)  + πBB*(k-1)/(Z-1)
+                  for k in range(1, Z)]
+            Tneg = [fermi_learning(ΠB[k-1], ΠA[k-1], β)
+                    for k in range(1, Z)]
+            Tplus = [fermi_learning(ΠA[k-1], ΠB[k-1], β)
+                     for k in range(1, Z)]
+            ρ = fixation_rate(Tplus, Tneg)
+            M[:, row_ind, col_ind] = ρ / max(1, len(S)-1)
+            M[:, row_ind, row_ind] -= ρ / max(1, len(S)-1)
+    return {**models, "transition_matrix": M}
+
+# %% ../nbs/01_methods.ipynb 78
 def find_ergodic_distribution(models:dict # A dictionary that contains the parameters in `ModelTypeEGT`
                              ):
     """Find the ergodic distribution of a markov chain with the
@@ -134,7 +170,7 @@ def find_ergodic_distribution(models:dict # A dictionary that contains the param
     ergodic = np.abs(ergodic) / np.sum(np.abs(ergodic), axis=1)[:, None]
     return {**models, 'ergodic':ergodic}
 
-# %% ../nbs/01_methods.ipynb 89
+# %% ../nbs/01_methods.ipynb 90
 def markov_chain(models:dict # A dictionary that contains the parameters in `ModelTypeEGT`
                 ):
     """Find the ergodic distribution of the evolutionary
@@ -142,3 +178,35 @@ def markov_chain(models:dict # A dictionary that contains the parameters in `Mod
     return thread_macro(models,
                         build_transition_matrix,
                         find_ergodic_distribution)
+
+# %% ../nbs/01_methods.ipynb 93
+@method(build_transition_matrix, 'multiple-populations')
+def build_transition_matrix(models:dict # A dictionary that contains the parameters in `ModelTypeEGT`
+                           ):
+    """Build a transition matrix between all monomorphic states
+    when there are multiple populations.    
+    """
+    Z, S, β = [models[k] for k in ['Z', 'strategy_set', 'β']]
+    strategy_contests = models['strategy_contests']
+    payoffs = models['payoffs']
+    M = np.zeros((list(payoffs.values())[0].shape[0], len(S), len(S)))
+    for row_ind in range(M.shape[-1]):
+        M[:, row_ind, row_ind] += 1
+    for contest in strategy_contests.values():
+        π = payoffs[contest['target']]
+        row_ind = contest['payoff_indices'][0]
+        col_ind = contest['payoff_indices'][1]
+        πAA = π[:, row_ind, row_ind]
+        πAB = π[:, row_ind, col_ind]
+        πBA = π[:, col_ind, row_ind]
+        πBB = π[:, col_ind, col_ind]
+        ΠA = [πAA*(Z-k-1)/(Z-1) + πAB*k/(Z-1)
+              for k in range(1, Z)]
+        ΠB = [πBA*(Z-k)/(Z-1)  + πBB*(k-1)/(Z-1)
+              for k in range(1, Z)]
+        # We use a numerically stable method to find the fixation rate, ρ.
+        # ρ is the probability that mutant B successfully invades A
+        ρ = fixation_rate_stable(ΠA, ΠB, β)
+        M[:, row_ind, col_ind] = ρ / max(1, len(S)-1)
+        M[:, row_ind, row_ind] -= ρ / max(1, len(S)-1)
+    return {**models, 'transition_matrix':M}
