@@ -20,8 +20,8 @@ website:
       - section: blog
         contents:
           - blog/index.qmd
-          - section: posts
+          - section: Posts
             contents:
               - section: 2022-10-27-blog1
                 contents:
-                  - blog/posts/2022-10-27-blog1/index.qmd
+                  - blog/Posts/2022-10-27-blog1/index.qmd

@@ -592,6 +592,7 @@ def compute_success(models):
     ind1, ind2 = models['transition_indices']
     sector_strategies = models['sector_strategies']
     allowed_sectors = models['allowed_sectors']
+    Z = models['Z']
     payoffs = models['payoffs']
     
     ind1_tuple = list(map(int, ind1.split("-")))
@@ -601,19 +602,30 @@ def compute_success(models):
     current_strategy = sector_strategies[affected_sector][ind1[np.argmax(differ)]]
     mutant_strategy = sector_strategies[affected_sector][ind2[np.argmax(differ)]]
     
-    dist1 = compute_profile_dist({**models,
-                                  'chosen_strategy': current_strategy})
-    dist2 = compute_profile_dist({**models,
-                                  'chosen_strategy': mutant_strategy})
-    success_A = 0
-    for profile, role_map in dist1.items():
-        for role, likelihood in role_map.items():
-            success_A += payoffs[profile][role] * likelihood
-    success_B = 0
-    for profile, role_map in dist2.items():
-        for role, likelihood in role_map.items():
-            success_B += payoffs[profile][role] * likelihood
-    return success_A, success_B
+    ΠA = []
+    ΠB = []
+    for n_mutants in range(1, Z[affected_sector]):  
+        dist1 = compute_profile_dist({**models,
+                                      'chosen_strategy': current_strategy,
+                                      'mutant_strategy': mutant_strategy,
+                                      'affected_sector': affected_sector,
+                                      'n_mutants': n_mutants})
+        dist2 = compute_profile_dist({**models,
+                                      'chosen_strategy': mutant_strategy,
+                                      'mutant_strategy': mutant_strategy,
+                                      'affected_sector': affected_sector,
+                                      'n_mutants': n_mutants})
+        success_A = 0
+        for profile, role_map in dist1.items():
+            for role, likelihood in role_map.items():
+                success_A += payoffs[profile][role] * likelihood
+        ΠA.append(success_A)
+        success_B = 0
+        for profile, role_map in dist2.items():
+            for role, likelihood in role_map.items():
+                success_B += payoffs[profile][role] * likelihood
+        ΠB.append(success_B)
+    return ΠA, ΠB
 
 # %% ../nbs/01_methods.ipynb 145
 @method(build_transition_matrix, 'multiple-populations-v2')
