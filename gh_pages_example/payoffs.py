@@ -146,7 +146,6 @@ def punished_and_sanctioned_payoffs(models:dict, # A dictionary containing the i
     b_p = np.where(both_speeds_positive,
                    (1-pfo) * b * s_punished / sum_of_speeds,
                    np.where(only_punisher_speed_positive, (1 - pfo)*b, 0))
-    
     sanctioner_payoff = (1 / R) * (πAB + B_s - (b_s - c)) + (b_s - c)
     # sanctioner_payoff = (1 / R) * (πAB + B_s + (R-1)*(b_s - c))
     punished_payoff = (p_loss / R) * (πBA + B_p - b_p) + p_loss * b_p
