@@ -17,6 +17,7 @@ website:
         contents:
           - Payoffs/index.qmd
           - Payoffs/02_payoffs1.ipynb
+          - Payoffs/02b_payoffs2.ipynb
       - section: blog
         contents:
           - blog/index.qmd
