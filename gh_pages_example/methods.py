@@ -13,6 +13,7 @@ __all__ = ['T_type', 'Z', 'sector_strategies', 'allowed_sectors', 'n_players', '
 # %% ../nbs/01_methods.ipynb 1
 from .utils import *
 from .types import *
+from .payoffs import *
 
 import functools
 import typing
@@ -1558,3 +1559,35 @@ for row_ind in range(M.shape[2]):
                 print("indices: ", model_ind, col_ind, row_ind)
             fastcore.test.test_close(M[model_ind, col_ind, row_ind],
                                      result[model_ind, col_ind, row_ind])
+
+# %% ../nbs/01_methods.ipynb 207
+Z = {"S3": 50, "S2": 50, "S1": 50}
+β = 0.08
+sector_strategies = {"S3": [4, 5],
+                     "S2": [2, 3],
+                     "S1": [0, 1],}
+allowed_sectors = {"P3": ["S3"],
+                   "P2": ["S2"],
+                   "P1": ["S1"],}
+sector_weights = {}
+
+models = {"dispatch-type": "multiple-populations",
+          "β": β,
+          "Z": Z,
+          "allowed_sectors": allowed_sectors,
+          "sector_strategies": sector_strategies,
+          #   "sector_weights": sector_weights,
+          'b_r': np.array([0.8]),
+          'b_s': np.array([0.4]),
+          'c_s': np.array([0.15]),
+          'c_t': np.array([0.15]),
+          'σ': np.array([0.2]),
+          }
+
+models = thread_macro(models,
+                      create_all_profiles,
+                      apply_profile_filters,
+                      payoffs_encanacao_2016,
+                      build_transition_matrix,
+                      )
+models['transition_matrix']
