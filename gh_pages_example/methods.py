@@ -1589,5 +1589,7 @@ models = thread_macro(models,
                       apply_profile_filters,
                       payoffs_encanacao_2016,
                       build_transition_matrix,
+                      find_ergodic_distribution,
                       )
 models['transition_matrix']
+models['ergodic'], np.sum(models['ergodic'][0, 4:])
