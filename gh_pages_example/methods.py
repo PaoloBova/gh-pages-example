@@ -4,11 +4,11 @@
 __all__ = ['T_type', 'Z', 'sector_strategies', 'allowed_sectors', 'n_players', 'n_strategies', 'sector_weights', 'models',
            'result1', 'result2', 'result3', 'result4', 'result5', 'result6', 'expected', 'expected1', 'expected2',
            'expected3', 'expected4', 'expected5', 'expected6', 'result', 'transition_indices', 'profiles_filtered',
-           'result1_sum', 'result2_sum', 'result3_sum', 'payoffs', 'fermi_learning', 'fixation_rate',
-           'fixation_rate_stable', 'ModelTypeEGT', 'build_transition_matrix', 'find_ergodic_distribution',
-           'markov_chain', 'sample_profile', 'create_all_profiles', 'profile_filter', 'apply_profile_filters',
-           'create_recurrent_states', 'valid_transition', 'compute_profile_dist', 'compute_success', 'vals',
-           'infer_n_models']
+           'result1_sum', 'result2_sum', 'result3_sum', 'payoffs', 'β', 'result_sums', 'S', 'matrix_inds', 'n_models',
+           'M', 'fermi_learning', 'fixation_rate', 'fixation_rate_stable', 'ModelTypeEGT', 'build_transition_matrix',
+           'find_ergodic_distribution', 'markov_chain', 'sample_profile', 'create_all_profiles', 'profile_filter',
+           'apply_profile_filters', 'create_recurrent_states', 'valid_transition', 'compute_profile_dist',
+           'compute_success', 'vals', 'infer_n_models', 'compute_success_analytical']
 
 # %% ../nbs/01_methods.ipynb 1
 from .utils import *
@@ -1388,151 +1388,173 @@ def build_transition_matrix(models: dict  # A dictionary that contains the param
     return {**models, 'transition_matrix': M}
 
 
-# %% ../nbs/01_methods.ipynb 208
-Z =  {"S2": 10, "S1": 10}
-sector_strategies = {"S2": [3, 4],
-                     "S1": [1, 2]}
-allowed_sectors = {"P2": ["S1", "S2"],
-                   "P1": ["S1", "S2"]}
-n_players = len(allowed_sectors.keys())
-n_strategies = [len(strategies) for strategies in sector_strategies]
+# %% ../nbs/01_methods.ipynb 198
+β = 1
+Z = {"S1": 50, "S2": 50, "S3": 50}
+allowed_sectors = {"P3": ["S3"],
+                   "P2": ["S2"],
+                   "P1": ["S1"]}
+sector_strategies = {"S3": [4, 5],
+                     "S2": [2, 3],
+                     "S1": [0, 1]}
 
-sector_weights = {}
-
-models = {"Z": Z,
-          "sector_strategies": sector_strategies,
+models = {"dispatch-type": "multiple-populations",
+          "β": β,
+          "Z": Z,
           "allowed_sectors": allowed_sectors,
-          "n_players": n_players,
-          "n_strategies": n_strategies,
-        #   "sector_weights": sector_weights,
-          }
+          "sector_strategies": sector_strategies,
+         }
 
 models = thread_macro(models,
                       create_all_profiles,
-                      (assoc, "transition_indices", ["3-1", "3-2"]),
                       apply_profile_filters)
-profiles_filtered = ['1-1', '1-2', '1-3',
-                     '2-1', '2-2', '2-3',
-                     '3-1', '3-2', '3-3']
-fastcore.test.test_eq(models["profiles_filtered"], profiles_filtered)
-
-payoffs = {
-  '1-1': {'P1': 2, 'P2': 2},
-  '1-2': {'P1': 4, 'P2': 0},
-  '1-3': {'P1': 3, 'P2': 3},
-  '1-4': {'P1': 6, 'P2': 0},
-  '2-1': {'P1': 0, 'P2': 4},
-  '2-2': {'P1': 1, 'P2': 1},
-  '2-3': {'P1': 0, 'P2': 6},
-  '2-4': {'P1': 2, 'P2': 1},
-  '3-1': {'P1': 3, 'P2': 3},
-  '3-2': {'P1': 6, 'P2': 0},
-  '3-3': {'P1': 4, 'P2': 4},
-  '3-4': {'P1': 8, 'P2': 0},
-  '4-1': {'P1': 0, 'P2': 6},
-  '4-2': {'P1': 1, 'P2': 2},
-  '4-3': {'P1': 0, 'P2': 8},
-  '4-4': {'P1': 2, 'P2': 2},
-}
-
-result2 = compute_success({**models, "payoffs": payoffs})
-# 50% chance of facing strategy 3 no matter if we look at strategy 1 or 2.
-# Otherwise, we have a 0.5 * (n_mutants / z_s1) chance of facing strategy 2
-# and a 0.5 * ((z_s1 - n_mutants) / z_s1) chance of facing strategy 1.
-expected2 = [[((0.5
-                * k / (Z["S1"] - 1)
-                * payoffs['2-1']['P1'])
-               + (0.5
-                  * (Z["S1"] - 1 - k)  / (Z["S1"] - 1)
-                  * payoffs['1-1']['P1'])
-               + 0.5 * payoffs['3-1']['P1'])
-              for k in range(1, 10)],
-             [((0.5
-                * (k - 1) / (Z["S1"] - 1)
-                * payoffs['2-2']['P1'])
-               + (0.5
-                  * (Z["S1"] - k)  / (Z["S1"] - 1)
-                  * payoffs['1-2']['P1'])
-               + 0.5 * payoffs['3-2']['P1'])
-              for k in range(1, 10)],]
-for result, expected in zip(result2[0], expected2[0]):
-  fastcore.test.test_close(result, expected)
-for result, expected in zip(result2[1], expected2[1]):
-  fastcore.test.test_close(result, expected)
-
-# %% ../nbs/01_methods.ipynb 211
-Z =  {"S2": 10, "S1": 10}
-sector_strategies = {"S2": [3, 4],
-                     "S1": [1, 2]}
-allowed_sectors = {"P2": ["S1", "S2"],
-                   "P1": ["S1", "S2"]}
-n_players = len(allowed_sectors.keys())
-n_strategies = [len(strategies) for strategies in sector_strategies]
-
-sector_weights = {}
-
-models = {"Z": Z,
-          "sector_strategies": sector_strategies,
-          "allowed_sectors": allowed_sectors,
-          "n_players": n_players,
-          "n_strategies": n_strategies,
-        #   "sector_weights": sector_weights,
-          }
-
-models = thread_macro(models,
-                      create_all_profiles,
-                      (assoc, "transition_indices", ["3-1", "3-2"]),
-                      apply_profile_filters)
-profiles_filtered = ['1-1', '1-2', '1-3',
-                     '2-1', '2-2', '2-3',
-                     '3-1', '3-2', '3-3']
-fastcore.test.test_eq(models["profiles_filtered"], profiles_filtered)
 
 payoffs = {}
-for profile in profiles_filtered:
+for profile in models['profiles_filtered']:
   payoffs[profile] = {}
-  for player in allowed_sectors.keys():
-    payoffs[profile][player] = np.random.beta(1, 1)
+  for player in models['allowed_sectors'].keys():
+    payoffs[profile][player] = np.array([np.random.beta(1, 1)
+                                         for _ in range(2)])
 models = {**models, "payoffs": payoffs}
 
-result2 = compute_success({**models, "payoffs": payoffs})
-# 50% chance of facing strategy 3 no matter if we look at strategy 1 or 2.
-# Otherwise, we have a 0.5 * (n_mutants / z_s1) chance of facing strategy 2
-# and a 0.5 * ((z_s1 - n_mutants) / z_s1) chance of facing strategy 1.
-# For each of theses there is a 50% of being player 1 or player 2.
-expected2 = [[((0.5
-                * k / (Z["S1"] - 1)
-                * (payoffs['2-1']['P1']
-                   + payoffs['1-2']['P2']) / 2
-                )
-               + (0.5
-                  * (Z["S1"] - 1 - k)  / (Z["S1"] - 1)
-                  * (payoffs['1-1']['P1']
-                     + payoffs['1-1']['P2']) / 2
-                  )
-               + (0.5
-                  * (payoffs['3-1']['P1']
-                     + payoffs['1-3']['P2']) / 2
-                  )
-               )
-              for k in range(1, 10)],
-             [((0.5
-                * (k - 1) / (Z["S1"] - 1)
-                * (payoffs['2-2']['P1']
-                   +  payoffs['2-2']['P2']) / 2
-                )
-               + (0.5
-                  * (Z["S1"] - k)  / (Z["S1"] - 1)
-                  * (payoffs['1-2']['P1']
-                     + payoffs['2-1']['P2']) / 2
-                  )
-               + (0.5
-                  * (payoffs['3-2']['P1']
-                     + payoffs['2-3']['P2']) / 2
-                  )
-               )
-              for k in range(1, 10)],]
-for result, expected in zip(result2[0], expected2[0]):
-  fastcore.test.test_close(result, expected)
-for result, expected in zip(result2[1], expected2[1]):
-  fastcore.test.test_close(result, expected)
+result = build_transition_matrix(models)['transition_matrix']
+result_sums = np.sum(result, axis=-1)
+fastcore.test.test_close(result_sums, 1)
+
+# %% ../nbs/01_methods.ipynb 202
+@multi
+def compute_success_analytical(models):
+    return models.get('success_analytical_derivation')
+    
+@method(compute_success_analytical, '2sector2strategy2player')
+def compute_success_analytical(models):
+    """Compute the success of each strategy involved in a transition for
+    a game with two players who can each be from one of two sectors. Each
+    sector uses two strategies."""
+
+    # 50% chance of facing fixed strategy no matter if we look at mutant or
+    # current strategy
+    # Otherwise, we have a 0.5 * (n_mutants / z_s1) chance of facing strategy 2
+    # and a 0.5 * ((z_s1 - n_mutants) / z_s1) chance of facing strategy 1.
+    # For each of theses there is a 50% of being player 1 or player 2.
+    transition_indices = models['transition_indices']
+    Z = models['Z']
+    payoffs = models['payoffs']
+    ind1, ind2 = transition_indices
+    ind1_tuple = list(map(int, ind1.split("-")))
+    ind2_tuple = list(map(int, ind2.split("-")))
+    differ = [i1 != i2 for i1, i2 in zip(ind1_tuple, ind2_tuple)]
+    affected_sector = f"S{np.argmax(differ[::-1]) + 1}"
+    current_strategy = ind1_tuple[np.argmax(differ)]
+    mutant_strategy = ind2_tuple[np.argmax(differ)]
+    # We only support two sectors here, so we know the other value must be the
+    # fixed sector.
+    fs = ind1_tuple[np.argmin(differ)]
+    cs = current_strategy
+    ms = mutant_strategy
+    SA, SB = [], []
+    z = Z[affected_sector]
+    for k in range(1, z):
+        successA = ((0.5
+                    * k / (z - 1)
+                    * (payoffs[f"{ms}-{cs}"]['P1']
+                        + payoffs[f"{cs}-{ms}"]['P2']) / 2
+                     )
+                    + (0.5
+                        * (z - 1 - k) / (z - 1)
+                        * (payoffs[f"{cs}-{cs}"]['P1']
+                           + payoffs[f"{cs}-{cs}"]['P2']) / 2
+                       )
+                    + (0.5
+                        * (payoffs[f"{fs}-{cs}"]['P1']
+                           + payoffs[f"{cs}-{fs}"]['P2']) / 2
+                       )
+                    )
+        SA.append(successA)
+        successB = ((0.5
+                     * (k - 1) / (z - 1)
+                     * (payoffs[f"{ms}-{ms}"]['P1']
+                         + payoffs[f"{ms}-{ms}"]['P2']) / 2
+                     )
+                    + (0.5
+                       * (z - k) / (z - 1)
+                       * (payoffs[f"{cs}-{ms}"]['P1']
+                           + payoffs[f"{ms}-{cs}"]['P2']) / 2
+                       )
+                    + (0.5
+                       * (payoffs[f"{fs}-{ms}"]['P1']
+                          + payoffs[f"{ms}-{fs}"]['P2']) / 2
+                       )
+                    )
+        SB.append(successB)
+    return SA, SB
+
+
+# %% ../nbs/01_methods.ipynb 203
+Z = {"S2": 10, "S1": 10}
+β = 1
+sector_strategies = {"S2": [3, 4],
+                     "S1": [1, 2]}
+allowed_sectors = {"P2": ["S1", "S2"],
+                   "P1": ["S1", "S2"]}
+sector_weights = {}
+
+models = {"dispatch-type": "multiple-populations",
+          "β": β,
+          "Z": Z,
+          "allowed_sectors": allowed_sectors,
+          "sector_strategies": sector_strategies,
+          #   "sector_weights": sector_weights,
+          }
+
+models = thread_macro(models,
+                      create_all_profiles,
+                      apply_profile_filters)
+
+payoffs = {}
+for profile in models['profiles_filtered']:
+    payoffs[profile] = {}
+    for player in allowed_sectors.keys():
+        payoffs[profile][player] = np.array([np.random.beta(1, 1)
+                                             for _ in range(2)])
+models = {**models, "payoffs": payoffs}
+
+result = thread_macro({**models, "payoffs": payoffs},
+                      build_transition_matrix,
+                      (get, "transition_matrix"))
+
+# Generate expected results
+S = ['3-1', '3-2', '4-1', '4-2']
+matrix_inds = [(i, j)
+               for i in range(len(S))
+               for j in range(len(S))]
+n_models = infer_n_models(models)
+M = np.zeros((n_models, len(S), len(S)))
+for i in range(M.shape[-1]):
+    M[:, i, i] += 1
+for i, j in matrix_inds:
+    transition_indices = [S[i], S[j]]
+    current_state, new_state = transition_indices
+    if current_state == new_state:
+        continue
+    if not valid_transition(current_state, new_state):
+        continue
+    transition_indices = [current_state, new_state]
+    expected_model = {"transition_indices": transition_indices,
+                      "Z": Z,
+                      "payoffs": payoffs,
+                      "success_analytical_derivation": "2sector2strategy2player"}
+    PA, PB = compute_success_analytical(expected_model)
+    rho = fixation_rate_stable(PA, PB, β)
+    M[:, i, j] += rho / 2
+    M[:, i, i] -= rho / 2
+
+# Test that expected and actual results are close
+for row_ind in range(M.shape[2]):
+    for col_ind in range(M.shape[1]):
+        for model_ind in range(M.shape[0]):
+            if not fastcore.test.is_close(M[model_ind, col_ind, row_ind],
+                                          result[model_ind, col_ind, row_ind]):
+                print("indices: ", model_ind, col_ind, row_ind)
+            fastcore.test.test_close(M[model_ind, col_ind, row_ind],
+                                     result[model_ind, col_ind, row_ind])
