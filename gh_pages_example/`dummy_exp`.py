@@ -10,5 +10,6 @@ from .utils import *
 from .types import *
 import typing
 
+import fastcore.test
 import numpy as np
 import nptyping
