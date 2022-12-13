@@ -15,7 +15,9 @@ from .utils import *
 from .types import *
 from .payoffs import *
 
+import collections
 import functools
+import math
 import typing
 
 import fastcore.test
@@ -216,12 +218,14 @@ def sample_profile(models):
     
     profile_tuple = list(map(int, profile.split("-")))
     assert chosen_strategy in profile_tuple
-
+    
+    # TODO: does it make sense for chosen_player_likelihood to take into account
+    # any possible position our chosen_player could have been in, no matter
+    # which strategies each player actually plays in the profile?
     above = sector_weights.get(chosen_player, {}).get(affected_sector, 1)
     below = 0
     for player, sectors in allowed_sectors.items():
-        if ((affected_sector in sectors)
-            ):
+        if affected_sector in sectors:
             below += sector_weights.get(player, {}).get(affected_sector, 1)
     if below == 0:
         raise ValueError("""affected_sector is never allowed in the game, 
@@ -995,7 +999,50 @@ def compute_profile_dist(models):
     return profile_distribution
 
 
-# %% ../nbs/01_methods.ipynb 171
+# %% ../nbs/01_methods.ipynb 169
+@method(compute_profile_dist, 'multi-player-symmetric')
+def compute_profile_dist(models):
+    """Compute the probability distribution of the relevant profiles - we have
+    one profile per combination of players and only compute the likelihood for
+    the relevant player type."""
+    chosen_strategy = models['chosen_strategy']
+    profiles = models['profiles_filtered']
+    profile_distribution = {}
+    counter = collections.Counter()
+    visited = collections.defaultdict()
+    for profile in profiles:
+        profile_tuple = list(map(int, profile.split("-")))
+        unique, counts = np.unique(profile_tuple, return_counts=True)
+        counter_key = "-".join([f"{u}:{c}" for u, c in zip(unique, counts)])
+        counter[counter_key] += 1
+        visited[counter_key] = False
+    for profile in profiles:
+        profile_tuple = list(map(int, profile.split("-")))
+        unique, counts = np.unique(profile_tuple, return_counts=True)
+        counter_key = "-".join([f"{u}:{c}" for u, c in zip(unique, counts)])
+        if visited[counter_key]:
+            # If we have seen a profile with the same strategy counts, skip it
+            continue
+        else:
+            visited[counter_key] = True
+            possible_players = [f"P{i+1}"
+                                for i, strategy in enumerate(profile_tuple[::-1])
+                                if strategy == chosen_strategy]
+            profile_distribution[profile] = {}
+            if len(possible_players) > 0:
+                # Player order does not matter
+                chosen_player = possible_players[0]
+                likelihood = sample_profile({**models,
+                                             "profile": profile,
+                                             "chosen_player": chosen_player})
+                # We must multiply the above likelihood by the number of ways
+                # this combination of players can be permuted.
+                likelihood *= counter[counter_key] * len(possible_players)
+                profile_distribution[profile][chosen_player] = likelihood
+    return profile_distribution
+
+
+# %% ../nbs/01_methods.ipynb 173
 Z =  {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1087,7 +1134,185 @@ for likelihoods_by_player in result1.values():
     result3_sum += likelihood
 fastcore.test.test_eq(result2_sum, 1)
 
-# %% ../nbs/01_methods.ipynb 173
+# %% ../nbs/01_methods.ipynb 176
+Z = {"S2": 10, "S1": 10}
+sector_strategies = {"S2": [3, 4],
+                     "S1": [1, 2]}
+allowed_sectors = {"P5": ["S1", "S2"],
+                   "P4": ["S1", "S2"],
+                   "P3": ["S1", "S2"],
+                   "P2": ["S1", "S2"],
+                   "P1": ["S1", "S2"]}
+n_players = len(allowed_sectors.keys())
+n_strategies = [len(strategies) for strategies in sector_strategies]
+
+sector_weights = {}
+
+models = {"Z": Z,
+          "sector_strategies": sector_strategies,
+          "allowed_sectors": allowed_sectors,
+          "n_players": n_players,
+          "n_strategies": n_strategies,
+          "chosen_strategy": 1,
+          "current_strategy": 1,
+          "mutant_strategy": 2,
+          "affected_sector": "S1",
+          "n_mutants": 2,
+          #   "sector_weights": sector_weights,
+          }
+
+models = thread_macro(models,
+                      create_all_profiles,
+                      (assoc, "transition_indices", ["3-1", "3-2"]),
+                      apply_profile_filters)
+profiles_filtered = ['1-1-1-1-1',
+                     '1-1-1-1-2',
+                     '1-1-1-1-3',
+                     '1-1-1-2-2',
+                     '1-1-1-2-3',
+                     '1-1-1-3-3',
+                     '1-1-2-2-2',
+                     '1-1-2-2-3',
+                     '1-1-2-3-3',
+                     '1-1-3-3-3',
+                     '1-2-2-2-2',
+                     '1-2-2-2-3',
+                     '1-2-2-3-3',
+                     '1-2-3-3-3',
+                     '1-3-3-3-3',
+                     '2-2-2-2-2',
+                     '2-2-2-2-3',
+                     '2-2-2-3-3',
+                     '2-2-3-3-3',
+                     '2-3-3-3-3',
+                     '3-3-3-3-3',]
+# fastcore.test.test_eq(models["profiles_filtered"], profiles_filtered)
+
+result1 = compute_profile_dist({**models,
+                                "profile_dist_rule": "multi-player-symmetric"})
+result2 = compute_profile_dist(models)
+
+# The expected results take the probability of attaining a given profile when
+# sampling all other players from the availabe sectors and player types (top few
+# lines), divided by the chance your agent was sampled to be in of the player
+# positions (in this case this is always 1/5), multiplied by the number of
+# different positions the player could be in for the given profile, and then
+# multiplied by the number of permutations of the given (read these numbers
+# from left to right on the last line). 
+expected1 = {'1-1-1-1-1': {'P1': (math.comb(7, 4) / math.comb(9, 4) / 2**4
+                                   / 5 * 5 * 1)},
+             '1-1-1-1-2': {'P2': (math.comb(7, 3) / math.comb(9, 3) / 2**3
+                                  * math.comb(2, 1) / math.comb(6, 1) / 2
+                                  / 5 * 4 * 5)},
+             '1-1-1-1-3': {'P2': (math.comb(7, 3) / math.comb(9, 3) / 2**3
+                                  * (1 / 2)
+                                  / 5 * 4 * 5)},
+             '1-1-1-2-2': {'P3': (math.comb(7, 2) / math.comb(9, 2) / 2**2
+                                  * math.comb(2, 2) / math.comb(7, 2) / 2**2
+                                  / 5 * 3 * 10)},
+             '1-1-1-2-3': {'P3': (math.comb(7, 2) / math.comb(9, 2) / 2**2
+                                  * math.comb(2, 1) / math.comb(7, 1) / 2
+                                  * (1 / 2)
+                                  / 5 * 3 * 20)},
+             '1-1-1-3-3': {'P3': (math.comb(7, 2) / math.comb(9, 2) / 2**2
+                                  * (1 / 2)**2
+                                  / 5 * 3 * 10)},
+             '1-1-2-2-2': {'P4': 0.0},  # Too many mutants so impossible
+             '1-1-2-2-3': {'P4': (math.comb(7, 1) / math.comb(9, 1) / 2
+                                  * math.comb(2, 2) / math.comb(8, 2) / 2**2
+                                  * (1 / 2)
+                                  / 5 * 2 * 30)},
+             '1-1-2-3-3': {'P4': (math.comb(7, 1) / math.comb(9, 1) / 2
+                                  * math.comb(2, 1) / math.comb(8, 1) / 2
+                                  * (1 / 2)**2
+                                  / 5 * 2 * 30)},
+             '1-1-3-3-3': {'P4': (math.comb(7, 1) / math.comb(9, 1) / 2
+                                  * (1 / 2)**3
+                                  / 5 * 2 * 10)},
+             '1-2-2-2-2': {'P5': 0.0},  # Too many mutants so impossible
+             '1-2-2-2-3': {'P5': 0.0},  # Too many mutants so impossible
+             '1-2-2-3-3': {'P5': (math.comb(2, 2) / math.comb(9, 2) / 2**2
+                                  * (1 / 2)**2
+                                  / 5 * 1 * 30)},
+             '1-2-3-3-3': {'P5': (math.comb(2, 1) / math.comb(9, 1) / 2
+                                  * (1 / 2)**3
+                                  / 5 * 1 * 20)},
+             '1-3-3-3-3': {'P5': ((1 / 2)**4
+                                  / 5 * 1 * 5)},
+             '2-2-2-2-2': {},  # Chosen strategy not present so impossible
+             '2-2-2-2-3': {},  # Chosen strategy not present so impossible
+             '2-2-2-3-3': {},  # Chosen strategy not present so impossible
+             '2-2-3-3-3': {},  # Chosen strategy not present so impossible
+             '2-3-3-3-3': {},  # Chosen strategy not present so impossible
+             '3-3-3-3-3': {}}  # Chosen strategy not present so impossible
+for profile in profiles_filtered:
+  for player in expected1[profile].keys():
+    fastcore.test.test_close(result1[profile][player],
+                             expected1[profile][player])
+
+
+result1_sum = 0
+for likelihoods_by_player in result1.values():
+  for likelihood in likelihoods_by_player.values():
+    result1_sum += likelihood
+fastcore.test.test_close(result1_sum, 1)
+
+# The expected results take the probability of attaining a given profile when
+# sampling all other players from the availabe sectors and player types (top few
+# lines), divided by the chance your agent was sampled to be in of the player
+# positions (in this case this is always 1/5). 
+expected2 = {'1-1-1-1-1': {'P1': (math.comb(7, 4) / math.comb(9, 4) / 2**4 
+                                  / 5)},
+             '1-1-1-1-2': {'P2': (math.comb(7, 3) / math.comb(9, 3) / 2**3
+                                  * math.comb(2, 1) / math.comb(6, 1) / 2
+                                  / 5)},
+             '1-1-1-1-3': {'P2': (math.comb(7, 3) / math.comb(9, 3) / 2**3
+                                  * (1 / 2)
+                                  / 5)},
+             '1-1-1-2-2': {'P3': (math.comb(7, 2) / math.comb(9, 2) / 2**2
+                                  * math.comb(2, 2) / math.comb(7, 2) / 2**2
+                                  / 5)},
+             '1-1-1-2-3': {'P3': (math.comb(7, 2) / math.comb(9, 2) / 2**2
+                                  * math.comb(2, 1) / math.comb(7, 1) / 2
+                                  * (1 / 2)
+                                  / 5 )},
+             '1-1-1-3-3': {'P3': (math.comb(7, 2) / math.comb(9, 2) / 2**2
+                                  * (1 / 2)**2
+                                  / 5)},
+             '1-1-2-2-2': {'P4': 0.0},  # Too many mutants so impossible
+             '1-1-2-2-3': {'P4': (math.comb(7, 1) / math.comb(9, 1) / 2
+                                  * math.comb(2, 2) / math.comb(8, 2) / 2**2
+                                  * (1 / 2)
+                                  / 5)},
+             '1-1-2-3-3': {'P4': (math.comb(7, 1) / math.comb(9, 1) / 2
+                                  * math.comb(2, 1) / math.comb(8, 1) / 2
+                                  * (1 / 2)**2
+                                  / 5)},
+             '1-1-3-3-3': {'P4': (math.comb(7, 1) / math.comb(9, 1) / 2
+                                  * (1 / 2)**3
+                                  / 5)},
+             '1-2-2-2-2': {'P5': 0.0},  # Too many mutants so impossible
+             '1-2-2-2-3': {'P5': 0.0},  # Too many mutants so impossible
+             '1-2-2-3-3': {'P5': (math.comb(2, 2) / math.comb(9, 2) / 2**2
+                                  * (1 / 2)**2
+                                  / 5)},
+             '1-2-3-3-3': {'P5': (math.comb(2, 1) / math.comb(9, 1) / 2
+                                  * (1 / 2)**3
+                                  / 5)},
+             '1-3-3-3-3': {'P5': ((1 / 2)**4
+                                  / 5)},
+             '2-2-2-2-2': {},  # Chosen strategy not present so impossible
+             '2-2-2-2-3': {},  # Chosen strategy not present so impossible
+             '2-2-2-3-3': {},  # Chosen strategy not present so impossible
+             '2-2-3-3-3': {},  # Chosen strategy not present so impossible
+             '2-3-3-3-3': {},  # Chosen strategy not present so impossible
+             '3-3-3-3-3': {}}  # Chosen strategy not present so impossible
+for profile in profiles_filtered:
+  for player in expected1[profile].keys():
+    fastcore.test.test_close(result2[profile][player],
+                             expected2[profile][player])
+
+# %% ../nbs/01_methods.ipynb 178
 @multi
 def compute_success(models):
     """Compute the success of the two strategies under consideration."""
@@ -1112,7 +1337,7 @@ def compute_success(models):
     
     ΠA = []
     ΠB = []
-    for n_mutants in range(1, Z[affected_sector]):  
+    for n_mutants in range(1, Z[affected_sector]):
         dist1 = compute_profile_dist({**models,
                                       'chosen_strategy': current_strategy,
                                       'current_strategy': current_strategy,
@@ -1137,7 +1362,7 @@ def compute_success(models):
         ΠB.append(success_B)
     return ΠA, ΠB
 
-# %% ../nbs/01_methods.ipynb 178
+# %% ../nbs/01_methods.ipynb 184
 Z =  {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1180,7 +1405,7 @@ for result, expected in zip(result1[0], expected1[0]):
 for result, expected in zip(result1[1], expected1[1]):
   fastcore.test.test_close(result, expected)
 
-# %% ../nbs/01_methods.ipynb 181
+# %% ../nbs/01_methods.ipynb 187
 Z =  {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1228,7 +1453,7 @@ payoffs = {
 }
 
 result2 = compute_success({**models, "payoffs": payoffs})
-# 50% chance of facing strategy 3 no matter if we look at strategy 1 or 2.
+# 50% chance of facing strategy 3 no matter if we look at player 1 or 2.
 # Otherwise, we have a 0.5 * (n_mutants / z_s1) chance of facing strategy 2
 # and a 0.5 * ((z_s1 - n_mutants) / z_s1) chance of facing strategy 1.
 expected2 = [[((0.5
@@ -1252,7 +1477,7 @@ for result, expected in zip(result2[0], expected2[0]):
 for result, expected in zip(result2[1], expected2[1]):
   fastcore.test.test_close(result, expected)
 
-# %% ../nbs/01_methods.ipynb 184
+# %% ../nbs/01_methods.ipynb 190
 Z =  {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1288,10 +1513,10 @@ for profile in profiles_filtered:
 models = {**models, "payoffs": payoffs}
 
 result2 = compute_success({**models, "payoffs": payoffs})
-# 50% chance of facing strategy 3 no matter if we look at strategy 1 or 2.
+# 50% chance of facing strategy 3 no matter if we look at player 1 or 2.
 # Otherwise, we have a 0.5 * (n_mutants / z_s1) chance of facing strategy 2
 # and a 0.5 * ((z_s1 - n_mutants) / z_s1) chance of facing strategy 1.
-# For each of theses there is a 50% of being player 1 or player 2.
+# For each of these there is a 50% of being player 1 or player 2.
 expected2 = [[((0.5
                 * k / (Z["S1"] - 1)
                 * (payoffs['2-1']['P1']
@@ -1329,12 +1554,12 @@ for result, expected in zip(result2[0], expected2[0]):
 for result, expected in zip(result2[1], expected2[1]):
   fastcore.test.test_close(result, expected)
 
-# %% ../nbs/01_methods.ipynb 186
+# %% ../nbs/01_methods.ipynb 192
 def vals(d:dict):
     "Return the values of a dictionary."
     return d.values()
 
-# %% ../nbs/01_methods.ipynb 187
+# %% ../nbs/01_methods.ipynb 193
 def infer_n_models(models):
     "Infer the number of models from the model payoffs."
     try:
@@ -1354,7 +1579,7 @@ def infer_n_models(models):
                          `payoffs` is structured incorrectly""")
     return n_models
 
-# %% ../nbs/01_methods.ipynb 192
+# %% ../nbs/01_methods.ipynb 198
 @method(build_transition_matrix, 'multiple-populations')
 def build_transition_matrix(models: dict  # A dictionary that contains the parameters in `ModelTypeEGTMultiple`
                             ):
@@ -1389,7 +1614,7 @@ def build_transition_matrix(models: dict  # A dictionary that contains the param
     return {**models, 'transition_matrix': M}
 
 
-# %% ../nbs/01_methods.ipynb 198
+# %% ../nbs/01_methods.ipynb 204
 β = 1
 Z = {"S1": 50, "S2": 50, "S3": 50}
 allowed_sectors = {"P3": ["S3"],
@@ -1422,7 +1647,7 @@ result = build_transition_matrix(models)['transition_matrix']
 result_sums = np.sum(result, axis=-1)
 fastcore.test.test_close(result_sums, 1)
 
-# %% ../nbs/01_methods.ipynb 202
+# %% ../nbs/01_methods.ipynb 208
 @multi
 def compute_success_analytical(models):
     return models.get('success_analytical_derivation')
@@ -1491,7 +1716,7 @@ def compute_success_analytical(models):
     return SA, SB
 
 
-# %% ../nbs/01_methods.ipynb 203
+# %% ../nbs/01_methods.ipynb 209
 Z = {"S2": 10, "S1": 10}
 β = 1
 sector_strategies = {"S2": [3, 4],
@@ -1560,7 +1785,7 @@ for row_ind in range(M.shape[2]):
             fastcore.test.test_close(M[model_ind, col_ind, row_ind],
                                      result[model_ind, col_ind, row_ind])
 
-# %% ../nbs/01_methods.ipynb 207
+# %% ../nbs/01_methods.ipynb 213
 Z = {"S3": 50, "S2": 50, "S1": 50}
 β = 0.08
 sector_strategies = {"S3": [4, 5],

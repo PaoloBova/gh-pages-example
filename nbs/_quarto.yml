@@ -5,7 +5,9 @@ project:
 
 format:
   html:
-    theme: cerulean
+    theme:
+      light: cerulean
+      dark: solar
     css: styles.css
     toc: true
     toc-depth: 4
@@ -19,6 +21,8 @@ website:
     search: true
     collapse-below: lg
     left:
+      - text: "Research"
+        href: blog/index.qmd
       - text: "Blog"
         href: blog/index.qmd
     right:
