@@ -8,12 +8,11 @@ __all__ = ['T_type', 'Z', 'sector_strategies', 'allowed_sectors', 'n_players', '
            'M', 'fermi_learning', 'fixation_rate', 'fixation_rate_stable', 'ModelTypeEGT', 'build_transition_matrix',
            'find_ergodic_distribution', 'markov_chain', 'sample_profile', 'create_all_profiles', 'profile_filter',
            'apply_profile_filters', 'create_recurrent_states', 'valid_transition', 'compute_profile_dist',
-           'compute_success', 'vals', 'infer_n_models', 'compute_success_analytical']
+           'compute_success', 'vals', 'infer_n_models', 'compute_success_analytical', 'payoffs_encanacao_2016']
 
 # %% ../nbs/01_methods.ipynb 1
 from .utils import *
 from .types import *
-from .payoffs import *
 
 import collections
 import functools
@@ -649,7 +648,7 @@ def profile_filter(models):
         for i, ind in enumerate(k_tuple[::-1]):
             allowed_inds = np.hstack([sector_strategies[j]
                                       for j in allowed_sectors[f"P{i+1}"]])
-            if ind not in allowed_inds:
+            if (ind not in allowed_inds) and (str(ind) not in allowed_inds):
                 valid = False
         if valid==True:
             profiles_filtered.append(k)
@@ -683,8 +682,10 @@ def profile_filter(models):
     # happen if the transition_indices and sctor_strategies are inconsistent,
     # so we raise a value error.
     for i, sector in enumerate(sorted(sector_strategies)):
-        if (strategies1[-(i+1)] not in sector_strategies[sector]
-            or strategies2[-(i+1)] not in sector_strategies[sector]):
+        if ((strategies1[-(i+1)] not in sector_strategies[sector]
+             and str(strategies1[-(i+1)]) not in sector_strategies[sector])
+            or (strategies2[-(i+1)] not in sector_strategies[sector]
+                and str(strategies2[-(i+1)]) not in sector_strategies[sector])):
             valid = False
             raise ValueError("States use invalid strategy codes for some sectors.")
     if valid:
@@ -1784,6 +1785,62 @@ for row_ind in range(M.shape[2]):
                 print("indices: ", model_ind, col_ind, row_ind)
             fastcore.test.test_close(M[model_ind, col_ind, row_ind],
                                      result[model_ind, col_ind, row_ind])
+
+# %% ../nbs/01_methods.ipynb 212
+def payoffs_encanacao_2016(models):
+    names = ['b_r', 'b_s', 'c_s', 'c_t', 'σ']
+    b_r, b_s, c_s, c_t, σ = [models[k] for k in names]
+    payoffs = {}
+    n_players = 3
+    n_sectors = 3
+    n_strategies_per_sector = [2, 2, 2]
+    n_strategies_total = 6
+    index_min = "0-0-0" # All players are from the first sector, playing that sector's first strategy
+    index_max = "5-5-5" # All players are from the third sector, playing that sector's second strategy
+    # Note: The seperator makes it easy to represent games where n_strategies_total >= 10.
+    
+    # It is also trivial to define a vector which maps these indexes to strategy profiles
+    # As sector order is fixed we could neglect to mention suscripts for each sector
+    strategy_names = ["D", "C", "D", "C", "D", "C"]
+    
+    zero = np.zeros(b_r.shape[0])
+    # As in the main text
+    payoffs["C-C-C"] = {"P3": b_r-2*c_s,
+                        "P2": σ+b_s-c_t,
+                        "P1": σ+b_s}
+    payoffs["C-C-D"] = {"P3": -c_s,
+                        "P2": b_s-c_t,
+                        "P1": zero}
+    payoffs["C-D-C"] = {"P3": b_r-c_s,
+                        "P2": zero,
+                        "P1": b_s}
+    payoffs["C-D-D"] = {"P3": zero,
+                        "P2": σ,
+                        "P1": σ}
+    payoffs["D-C-C"] = {"P3": zero,
+                        "P2": σ-c_t,
+                        "P1": σ}
+    payoffs["D-C-D"] = {"P3": zero,
+                        "P2": -c_t,
+                        "P1": zero}
+    payoffs["D-D-C"] = {"P3": zero,
+                        "P2": zero,
+                        "P1": zero}
+    payoffs["D-D-D"] = {"P3": zero,
+                        "P2": σ,
+                        "P1": σ}
+    
+    # The following indexes capture all strategy profiles where each player is fixed to a unique sector
+    # (and player order does not matter, so we need only consider one ordering of sectors).
+    payoffs["4-2-0"] = payoffs["D-D-D"]
+    payoffs["4-2-1"] = payoffs["D-D-C"]
+    payoffs["4-3-0"] = payoffs["D-C-D"]
+    payoffs["4-3-1"] = payoffs["D-C-C"]
+    payoffs["5-2-0"] = payoffs["C-D-D"]
+    payoffs["5-2-1"] = payoffs["C-D-C"]
+    payoffs["5-3-0"] = payoffs["C-C-D"]
+    payoffs["5-3-1"] = payoffs["C-C-C"]
+    return {**models, "payoffs": payoffs}
 
 # %% ../nbs/01_methods.ipynb 213
 Z = {"S3": 50, "S2": 50, "S1": 50}

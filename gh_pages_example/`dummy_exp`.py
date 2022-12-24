@@ -6,10 +6,17 @@ __all__ = []
 # %% ../nbs/Payoffs/03_payoffs2.ipynb 3
 from nbdev.showdoc import *
 from fastcore.test import test_eq, test_close
+import collections
+import functools
 from .utils import *
 from .types import *
+from .methods import *
+import itertools
+import math
 import typing
 
 import fastcore.test
+import more_itertools
 import numpy as np
 import nptyping
+

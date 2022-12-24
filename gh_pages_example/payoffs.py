@@ -263,14 +263,16 @@ def payoffs_encanacao_2016(models):
     n_sectors = 3
     n_strategies_per_sector = [2, 2, 2]
     n_strategies_total = 6
-    index_min = "0-0-0" # All players are from the first sector, playing that sector's first strategy
-    index_max = "5-5-5" # All players are from the third sector, playing that sector's second strategy
+    # All players are from the first sector, playing that sector's first strategy
+    index_min = "0-0-0"
+    # All players are from the third sector, playing that sector's second strategy
+    index_max = "5-5-5"
     # Note: The seperator makes it easy to represent games where n_strategies_total >= 10.
-    
+
     # It is also trivial to define a vector which maps these indexes to strategy profiles
     # As sector order is fixed we could neglect to mention suscripts for each sector
     strategy_names = ["D", "C", "D", "C", "D", "C"]
-    
+
     zero = np.zeros(b_r.shape[0])
     # As in the main text
     payoffs["C-C-C"] = {"P3": b_r-2*c_s,
@@ -297,7 +299,7 @@ def payoffs_encanacao_2016(models):
     payoffs["D-D-D"] = {"P3": zero,
                         "P2": σ,
                         "P1": σ}
-    
+
     # The following indexes capture all strategy profiles where each player is fixed to a unique sector
     # (and player order does not matter, so we need only consider one ordering of sectors).
     payoffs["4-2-0"] = payoffs["D-D-D"]
