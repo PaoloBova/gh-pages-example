@@ -214,6 +214,31 @@ def create_profiles(models):
                 profiles.append(profile)
     return {**models, "profiles": profiles}
 
+# @method(create_profiles)
+# def create_profiles(models):
+#     """Create all strategy profiles for the set of models."""
+#     sector_strategies = models.get('sector_strategies', {})
+#     allowed_sectors = models.get('allowed_sectors', {})
+#     n_players = models.get('n_players', len(allowed_sectors))
+#     n_strategies = models.get('n_strategies',
+#                               [len(v) for v in sector_strategies.values()])
+#     n_strategies_total = np.sum(n_strategies)
+#     zero_strategy = False
+#     for strategies in sector_strategies.values():
+#         if "0" in strategies:
+#             zero_strategy = True
+#     n_strategies_total += (1 - zero_strategy)  # Add null sector if not present
+#     n_profiles = n_strategies_total ** n_players
+#     strategy_axis = np.arange(n_strategies_total)[:, None]
+#     grid = build_grid_from_axes([strategy_axis for _ in range(n_players)])
+#     profiles = []
+#     for row in grid:
+#         profile = "-".join(map(str, row))
+#         profiles.append(profile)
+#     fastcore.test.test_eq(len(profiles), n_profiles)
+#     return {**models, "profiles": profiles}
+
+
 @method(create_profiles)
 def create_profiles(models):
     """Create all strategy profiles for the set of models."""
@@ -223,13 +248,14 @@ def create_profiles(models):
     n_strategies = models.get('n_strategies',
                               [len(v) for v in sector_strategies.values()])
     n_strategies_total = np.sum(n_strategies)
-    zero_strategy = False
-    for strategies in sector_strategies.values():
-        if "0" in strategies:
-            zero_strategy = True
-    n_strategies_total += (1 - zero_strategy)  # Add null sector if not present
+    if sector_strategies=={}:
+        strategies = np.arange(n_strategies_total)
+    else:
+        strategies = np.unique([strategy
+                                for sector in sector_strategies.keys()
+                                for strategy in sector_strategies[sector]])
     n_profiles = n_strategies_total ** n_players
-    strategy_axis = np.arange(n_strategies_total)[:, None]
+    strategy_axis = strategies[:, None]
     grid = build_grid_from_axes([strategy_axis for _ in range(n_players)])
     profiles = []
     for row in grid:

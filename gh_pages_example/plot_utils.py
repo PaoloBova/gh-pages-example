@@ -22,6 +22,8 @@ def plot_strategy_distribution(data, # The dataset containing data on parameters
                                x="pr", # The parameter to place on the x-axis of the plot
                                x_label='Risk of an AI disaster, pr', # the x-axis label
                                title='Strategy distribution', # the plot title
+                               thresholds=["threshold_society_prefers_safety",
+                                           "threshold_risk_dominant_safety"], # A list of threshold names in data
                                ) -> None:
     """Plot the strategy distribution as we vary `x`."""
 
@@ -36,12 +38,12 @@ def plot_strategy_distribution(data, # The dataset containing data on parameters
     ax.set_ylabel('Proportion')
 
     # Add threshold boundaries to convey dilemma region
-    plt.vlines([data['threshold_society_prefers_safety'].values[0],
-                data['threshold_risk_dominant_safety'].values[0]],
-               0,
-               0.995,
-               colors=['C2', 'C3'],
-               linewidth=3)
+    if thresholds!=None:        
+        plt.vlines([data[name].values[0] for name in thresholds],
+                    0,
+                    0.995,
+                    colors=[f"C{2+i}" for i in range(len(thresholds))],
+                    linewidth=3)
 
 # %% ../nbs/plots_utils.ipynb 4
 def plot_heatmap(table, # A pivot table, created using `pandas.pivot` function
