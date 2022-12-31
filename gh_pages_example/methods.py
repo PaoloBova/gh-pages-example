@@ -3,15 +3,16 @@
 # %% auto 0
 __all__ = ['T_type', 'Z', 'sector_strategies', 'allowed_sectors', 'n_players', 'n_strategies', 'sector_weights', 'models',
            'result1', 'result2', 'result3', 'result4', 'result5', 'result6', 'expected', 'expected1', 'expected2',
-           'expected3', 'expected4', 'expected5', 'expected6', 'result', 'transition_indices', 'profiles_filtered',
-           'result1_sum', 'result2_sum', 'result3_sum', 'payoffs', 'β', 'result_sums', 'S', 'matrix_inds', 'n_models',
-           'M', 'fermi_learning', 'fixation_rate', 'fixation_rate_stable', 'ModelTypeEGT', 'build_transition_matrix',
-           'find_ergodic_distribution', 'markov_chain', 'sample_profile', 'create_all_profiles', 'profile_filter',
-           'apply_profile_filters', 'create_recurrent_states', 'valid_transition', 'compute_profile_dist',
-           'compute_success', 'vals', 'infer_n_models', 'compute_success_analytical', 'payoffs_encanacao_2016']
+           'expected3', 'expected4', 'expected5', 'expected6', 'profiles_filtered', 'result1_sum', 'result2_sum',
+           'result3_sum', 'payoffs', 'β', 'result', 'result_sums', 'S', 'matrix_inds', 'n_models', 'M',
+           'fermi_learning', 'fixation_rate', 'fixation_rate_stable', 'ModelTypeEGT', 'build_transition_matrix',
+           'find_ergodic_distribution', 'markov_chain', 'sample_profile', 'create_recurrent_states', 'valid_transition',
+           'compute_profile_dist', 'compute_success', 'vals', 'infer_n_models', 'compute_success_analytical',
+           'payoffs_encanacao_2016']
 
 # %% ../nbs/01_methods.ipynb 1
 from .utils import *
+from .model_utils import *
 from .types import *
 
 import collections
@@ -578,370 +579,7 @@ fastcore.test.test_eq(result4, expected4)
 fastcore.test.test_eq(result5, expected5)
 fastcore.test.test_eq(result6, expected6)
 
-# %% ../nbs/01_methods.ipynb 124
-def create_all_profiles(models):
-    """Create all strategy profiles for the set of models."""
-    sector_strategies = models.get('sector_strategies', {})
-    allowed_sectors = models.get('allowed_sectors', {})
-    n_players = models.get('n_players', len(allowed_sectors))
-    n_strategies = models.get('n_strategies',
-                              [len(v) for v in sector_strategies.values()])
-    n_strategies_total = np.sum(n_strategies)
-    n_strategies_total += 1  # Add null sector.
-    n_profiles = n_strategies_total ** n_players
-    strategy_axis = np.arange(n_strategies_total)[:, None]
-    grid = build_grid_from_axes([strategy_axis for _ in range(n_players)])
-    profiles = []
-    for row in grid:
-        profile = "-".join(map(str, row))
-        profiles.append(profile)
-    fastcore.test.test_eq(len(profiles), n_profiles)
-    return {**models, "profiles": profiles}
-
-# %% ../nbs/01_methods.ipynb 126
-result = create_all_profiles({"n_players": 2, "n_strategies": 2})
-fastcore.test.test_eq(result['profiles'],
-                      ['0-0', '0-1', '0-2',
-                       '1-0', '1-1', '1-2',
-                       '2-0', '2-1', '2-2'])
-
-result = create_all_profiles({"n_players": 2, "n_strategies": [2, 1]})
-fastcore.test.test_eq(result['profiles'],
-                      ["0-0", "0-1", "0-2", "0-3",
-                       "1-0", "1-1", "1-2", "1-3",
-                       "2-0", "2-1", "2-2", "2-3",
-                       "3-0", "3-1", "3-2", "3-3", ])
-
-fastcore.test.test_eq(create_all_profiles({"n_players": 2,
-                                           "n_strategies": [2, 2]})['profiles'],
-                      create_all_profiles({"n_players": 2,
-                                          "n_strategies": 4})['profiles'])
-
-models = {"allowed_sectors": {"P1": ["S1"],
-                              "P2": ["S2"]},
-          "sector_strategies": {"S1": [1, 2],
-                                "S2": [3, 4]}}
-fastcore.test.test_eq(create_all_profiles(models)['profiles'],
-                      create_all_profiles({"n_players": 2,
-                                          "n_strategies": 4})['profiles'])
-
-
-# %% ../nbs/01_methods.ipynb 128
-@multi
-def profile_filter(models):
-    "Filter strategy profiles to those which satisfy the given rule."
-    return models.get('profile_filter_rule')
-
-@method(profile_filter, 'allowed_sectors')
-def profile_filter(models):
-    """Filter strategy profiles to only those where players are from their
-    allowed sectors."""
-    profiles = models.get('profiles_filtered',
-                          models.get('profiles',
-                                     create_all_profiles(models)['profiles']))
-    allowed_sectors = models['allowed_sectors']
-    sector_strategies = models['sector_strategies']
-    profiles_filtered = []
-    for k in profiles:
-        k_tuple = list(map(int, k.split("-")))
-        valid = True
-        for i, ind in enumerate(k_tuple[::-1]):
-            allowed_inds = np.hstack([sector_strategies[j]
-                                      for j in allowed_sectors[f"P{i+1}"]])
-            if (ind not in allowed_inds) and (str(ind) not in allowed_inds):
-                valid = False
-        if valid==True:
-            profiles_filtered.append(k)
-    return {**models, "profiles_filtered": profiles_filtered}
-
-@method(profile_filter)
-def profile_filter(models):
-    """The default filter method leaves models unchanged."""
-    print("""`profile_filter` called but `models` did not specify a
-           `profile_filter_rule`. Try specifying one.""")
-    return models
-
-# %% ../nbs/01_methods.ipynb 131
-@method(profile_filter, 'relevant_to_transition')
-def profile_filter(models):
-    """Filter for strategy profiles relevant to the given transition."""
-    ind1, ind2 = models.get('transition_indices', [None, None])
-    if (ind1==None) and (ind2==None):
-        return models
-    sector_strategies = models['sector_strategies']
-    profiles = models.get('profiles_filtered',
-                          models.get('profiles',
-                                     create_all_profiles(models)['profiles']))
-    strategies1 = list(map(int, ind1.split("-")))
-    strategies2 = list(map(int, ind2.split("-")))
-    differ = [i1!=i2 for i1, i2 in zip(strategies1, strategies2)]
-    # Check states only differ for one sector
-    valid = sum(differ) == 1
-    # Check that states use valid stratgy codes for each sector
-    # Unlike when the states differ by more than one sector, this will only
-    # happen if the transition_indices and sctor_strategies are inconsistent,
-    # so we raise a value error.
-    for i, sector in enumerate(sorted(sector_strategies)):
-        if ((strategies1[-(i+1)] not in sector_strategies[sector]
-             and str(strategies1[-(i+1)]) not in sector_strategies[sector])
-            or (strategies2[-(i+1)] not in sector_strategies[sector]
-                and str(strategies2[-(i+1)]) not in sector_strategies[sector])):
-            valid = False
-            raise ValueError("States use invalid strategy codes for some sectors.")
-    if valid:
-        strategies_valid = np.unique(np.hstack([strategies1, strategies2]))
-        profiles_filtered = []
-        for profile in profiles:
-            relevant = True
-            for strategy in list(map(int, profile.split("-"))):
-                if strategy not in strategies_valid:
-                    relevant = False
-            if relevant == True:
-                profiles_filtered.append(profile)
-        return {**models, "profiles_filtered": profiles_filtered}
-    return models
-
-# %% ../nbs/01_methods.ipynb 133
-def apply_profile_filters(models):
-    "Apply all profile filters listed in `profile_filters` in `models`."
-    for rule in models.get('profile_filters', 
-                           ["allowed_sectors",
-                            "relevant_to_transition"]):
-        models = profile_filter({**models, "profile_filter_rule": rule})
-    return models
-
-# %% ../nbs/01_methods.ipynb 138
-allowed_sectors = {"P3": ["S2"],
-                   "P2": ["S2"],
-                   "P1": ["S1"]}
-sector_strategies = {"S2": [2, 3],
-                     "S1": [0, 1]}
-n_players = 3
-n_strategies = [2, 2] # this could be derived from sector_strategies or the other way round.
-models = {"profile_filter_rule": "allowed_sectors",
-          "n_players": n_players,
-          "n_strategies": n_strategies,
-          "allowed_sectors": allowed_sectors,
-          "sector_strategies": sector_strategies}
-result = profile_filter(models)['profiles_filtered']
-# Only strategy 2 is irrelevant
-expected = ["2-2-0", "2-2-1", 
-            "2-3-0", "2-3-1",
-            "3-2-0", "3-2-1",
-            "3-3-0", "3-3-1",]
-fastcore.test.test_eq(result, expected)
-fastcore.test.test_eq(len(result), 8)
-
-# %% ../nbs/01_methods.ipynb 140
-allowed_sectors = {"P3": ["S3"],
-                   "P2": ["S2"],
-                   "P1": ["S1"]}
-sector_strategies = {"S3": [4, 5],
-                     "S2": [2, 3],
-                     "S1": [0, 1]}
-models = {"profile_filter_rule": "allowed_sectors",
-          "n_players": 3,
-          "n_strategies": [2, 2, 2],
-          "allowed_sectors": allowed_sectors,
-          "sector_strategies": sector_strategies}
-result = profile_filter(models)['profiles_filtered']
-expected = ["4-2-0",
-            "4-2-1",
-            "4-3-0",
-            "4-3-1",
-            "5-2-0",
-            "5-2-1",
-            "5-3-0",
-            "5-3-1",
-           ]
-fastcore.test.test_eq(result, expected)
-
-# %% ../nbs/01_methods.ipynb 144
-sector_strategies = {"S2": [2, 3],
-                     "S1": [0, 1]}
-transition_indices = ["3-0", "3-1"]
-allowed_sectors = {"P1": ["S1"],
-                   "P2": ["S1"],
-                   "P3": ["S2"],}
-models = {"profile_filter_rule": "relevant_to_transition",
-          "n_players": n_players,
-          "n_strategies": n_strategies,
-          "sector_strategies": sector_strategies,
-          "transition_indices": transition_indices}
-result = profile_filter(models)['profiles_filtered']
-# Only strategy 2 is irrelevant
-expected = ["0-0-0", "0-0-1", "0-0-3", 
-            "0-1-0", "0-1-1", "0-1-3",
-            "0-3-0", "0-3-1", "0-3-3",
-            "1-0-0", "1-0-1", "1-0-3",
-            "1-1-0", "1-1-1", "1-1-3",
-            "1-3-0", "1-3-1", "1-3-3",
-            "3-0-0", "3-0-1", "3-0-3",
-            "3-1-0", "3-1-1", "3-1-3",
-            "3-3-0", "3-3-1", "3-3-3"]
-fastcore.test.test_eq(result, expected)
-expected = (np.sum(n_strategies) - 1) ** n_players  # 1 of the 4 strategies won't be relevant here
-fastcore.test.test_eq(len(result), expected)
-
-# %% ../nbs/01_methods.ipynb 146
-sector_strategies = {"S3": [4, 5],
-                     "S2": [2, 3],
-                     "S1": [0, 1]}
-transition_indices = ["5-3-1", "5-3-0"]
-n_players = 3
-n_strategies = [2, 2, 2]
-models = {"profile_filter_rule": "relevant_to_transition",
-          "n_players": n_players,
-          "n_strategies": n_strategies,
-          "sector_strategies": sector_strategies,
-          "transition_indices": transition_indices}
-result = profile_filter(models)['profiles_filtered']
-expected = (np.sum(n_strategies) - 2) ** n_players  # 2 of the 6 strategies won't be relevant here
-fastcore.test.test_eq(len(result), expected)
-
-# %% ../nbs/01_methods.ipynb 149
-allowed_sectors = {"P3": ["S3"],
-                   "P2": ["S2"],
-                   "P1": ["S1"]}
-sector_strategies = {"S3": [4, 5],
-                     "S2": [2, 3],
-                     "S1": [0, 1]}
-transition_indices = ["5-3-1", "5-3-0"]
-n_players = 3
-n_strategies = [2, 2, 2]
-models = {"profile_filter_rule": "relevant_to_transition",
-          "n_players": n_players,
-          "n_strategies": n_strategies,
-          "allowed_sectors": allowed_sectors,
-          "sector_strategies": sector_strategies,
-          "transition_indices": transition_indices}
-result = thread_macro(models,
-                      profile_filter,
-                      (assoc, "profile_filter_rule", "allowed_sectors"),
-                      profile_filter)
-expected = ["5-3-0", "5-3-1"]
-fastcore.test.test_eq(len(result['profiles_filtered']), 2)
-fastcore.test.test_eq(result['profiles_filtered'], expected)
-
-# %% ../nbs/01_methods.ipynb 151
-allowed_sectors = {"P3": ["S3"],
-                   "P2": ["S2"],
-                   "P1": ["S1"]}
-sector_strategies = {"S3": [4, 5],
-                     "S2": [2, 3],
-                     "S1": [0, 1]}
-transition_indices = ["5-3-1", "5-3-0"]
-n_players = 3
-n_strategies = [2, 2, 2]
-models = {"profile_filter_rule": "relevant_to_transition",
-          "n_players": n_players,
-          "n_strategies": n_strategies,
-          "allowed_sectors": allowed_sectors,
-          "sector_strategies": sector_strategies,
-          "transition_indices": transition_indices}
-result1 = thread_macro(models,
-                       profile_filter,
-                       (assoc, "profile_filter_rule", "allowed_sectors"),
-                       profile_filter)
-result2 = thread_macro(models,
-                       (assoc, "profile_filter_rule", "allowed_sectors"),
-                       profile_filter,
-                       (assoc, "profile_filter_rule", "relevant_to_transition"),
-                       profile_filter)
-expected = ["5-3-0", "5-3-1"]
-fastcore.test.test_eq(result1['profiles_filtered'], expected)
-fastcore.test.test_eq(result2['profiles_filtered'], expected)
-fastcore.test.test_eq(result1['profiles_filtered'],
-                      result2['profiles_filtered'])
-
-# %% ../nbs/01_methods.ipynb 153
-allowed_sectors = {"P3": ["S3"],
-                   "P2": ["S2"],
-                   "P1": ["S1"]}
-sector_strategies = {"S3": [4, 5],
-                     "S2": [2, 3],
-                     "S1": [0, 1]}
-transition_indices = ["5-3-1", "5-3-0"]
-n_players = 3
-n_strategies = [2, 2, 2]
-models = {"profile_filter_rule": "relevant_to_transition",
-          "n_players": n_players,
-          "n_strategies": n_strategies,
-          "allowed_sectors": allowed_sectors,
-          "sector_strategies": sector_strategies,
-          "transition_indices": transition_indices}
-models = assoc(models, 
-               'profile_filters', 
-               ["allowed_sectors", "relevant_to_transition"])
-result = apply_profile_filters(models)
-expected = ["5-3-0", "5-3-1"]
-fastcore.test.test_eq(result['profiles_filtered'], expected)
-
-# %% ../nbs/01_methods.ipynb 155
-allowed_sectors = {"P3": ["S2"],
-                   "P2": ["S2"],
-                   "P1": ["S1"]}
-sector_strategies = {"S2": [2, 3],
-                     "S1": [0, 1]}
-transition_indices = ["3-0", "3-1"]
-n_players = 3
-n_strategies = [2, 2] # this could be derived from sector_strategies or the other way round.
-models = {"profile_filter_rule": "relevant_to_transition",
-          "n_players": n_players,
-          "n_strategies": n_strategies,
-          "allowed_sectors": allowed_sectors,
-          "sector_strategies": sector_strategies,
-          "transition_indices": transition_indices}
-result = apply_profile_filters(models)
-result1 = thread_macro(models,
-                       profile_filter,
-                       (assoc, "profile_filter_rule", "allowed_sectors"),
-                       profile_filter)
-result2 = thread_macro(models,
-                       (assoc, "profile_filter_rule", "allowed_sectors"),
-                       profile_filter,
-                       (assoc, "profile_filter_rule", "relevant_to_transition"),
-                       profile_filter)
-expected = ["3-3-0", "3-3-1"]
-fastcore.test.test_eq(result1['profiles_filtered'], expected)
-fastcore.test.test_eq(result2['profiles_filtered'], expected)
-fastcore.test.test_eq(result1['profiles_filtered'],
-                      result2['profiles_filtered'])
-
-# %% ../nbs/01_methods.ipynb 157
-allowed_sectors = {"P3": ["S2"],
-                   "P2": ["S2"],
-                   "P1": ["S1"]}
-sector_strategies = {"S2": [2, 3],
-                     "S1": [0, 1]}
-transition_indices = ["2-1", "3-1"]
-n_players = 3
-n_strategies = [2, 2] # this could be derived from sector_strategies or the other way round.
-models = {"profile_filter_rule": "relevant_to_transition",
-          "n_players": n_players,
-          "n_strategies": n_strategies,
-          "allowed_sectors": allowed_sectors,
-          "sector_strategies": sector_strategies,
-          "transition_indices": transition_indices}
-result1 = thread_macro(models,
-                       profile_filter,
-                       (assoc, "profile_filter_rule", "allowed_sectors"),
-                       profile_filter)
-result2 = thread_macro(models,
-                       (assoc, "profile_filter_rule", "allowed_sectors"),
-                       profile_filter,
-                       (assoc, "profile_filter_rule", "relevant_to_transition"),
-                       profile_filter)
-models = assoc(models, 
-               'profile_filters', 
-               ["allowed_sectors", "relevant_to_transition"])
-result3 = apply_profile_filters(models)
-expected = ["2-2-1", "2-3-1", "3-2-1", "3-3-1"]
-fastcore.test.test_eq(result1['profiles_filtered'], expected)
-fastcore.test.test_eq(result2['profiles_filtered'], expected)
-fastcore.test.test_eq(result3['profiles_filtered'], expected)
-
-# %% ../nbs/01_methods.ipynb 159
+# %% ../nbs/01_methods.ipynb 122
 def create_recurrent_states(models):
     """Create all recurrent-states for the set of models."""
     sector_strategies = models['sector_strategies']
@@ -954,7 +592,7 @@ def create_recurrent_states(models):
     return states
 
 
-# %% ../nbs/01_methods.ipynb 164
+# %% ../nbs/01_methods.ipynb 127
 def valid_transition(ind1:str, # The index of the current state, expressed in the form "{strategy_code}-{strategy_code}-{strategy_code}"
                      ind2:str,  # The index of the next state, expressed in the same form as `ind1`
                     ) -> bool: # True if the transition is valid, false otherwise
@@ -966,14 +604,14 @@ def valid_transition(ind1:str, # The index of the current state, expressed in th
     valid = sum(differ) == 1
     return valid
 
-# %% ../nbs/01_methods.ipynb 166
+# %% ../nbs/01_methods.ipynb 129
 fastcore.test.test_eq(valid_transition("1-1-1", "2-1-1"), True)
 fastcore.test.test_eq(valid_transition("1-1-1", "2-1-2"), False)
 fastcore.test.test_eq(valid_transition("1-1-1", "0-0-0"), False)
 fastcore.test.test_eq(valid_transition("1-1-1", "22-1-3"), False)
 fastcore.test.test_eq(valid_transition("1-1-1", "1-1-1"), False) # Even though possible, self transitions are marked as false since we never compute them directly
 
-# %% ../nbs/01_methods.ipynb 168
+# %% ../nbs/01_methods.ipynb 131
 @multi
 def compute_profile_dist(models):
     """Compute the probability distribution of the relevant profiles."""
@@ -1000,7 +638,7 @@ def compute_profile_dist(models):
     return profile_distribution
 
 
-# %% ../nbs/01_methods.ipynb 169
+# %% ../nbs/01_methods.ipynb 132
 @method(compute_profile_dist, 'multi-player-symmetric')
 def compute_profile_dist(models):
     """Compute the probability distribution of the relevant profiles - we have
@@ -1043,7 +681,7 @@ def compute_profile_dist(models):
     return profile_distribution
 
 
-# %% ../nbs/01_methods.ipynb 173
+# %% ../nbs/01_methods.ipynb 136
 Z =  {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1068,7 +706,7 @@ models = {"Z": Z,
           }
 
 models = thread_macro(models,
-                      create_all_profiles,
+                      create_profiles,
                       (assoc, "transition_indices", ["3-1", "3-2"]),
                       apply_profile_filters)
 profiles_filtered = ['1-1', '1-2', '1-3',
@@ -1135,7 +773,7 @@ for likelihoods_by_player in result1.values():
     result3_sum += likelihood
 fastcore.test.test_eq(result2_sum, 1)
 
-# %% ../nbs/01_methods.ipynb 176
+# %% ../nbs/01_methods.ipynb 139
 Z = {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1163,7 +801,7 @@ models = {"Z": Z,
           }
 
 models = thread_macro(models,
-                      create_all_profiles,
+                      create_profiles,
                       (assoc, "transition_indices", ["3-1", "3-2"]),
                       apply_profile_filters)
 profiles_filtered = ['1-1-1-1-1',
@@ -1313,7 +951,7 @@ for profile in profiles_filtered:
     fastcore.test.test_close(result2[profile][player],
                              expected2[profile][player])
 
-# %% ../nbs/01_methods.ipynb 178
+# %% ../nbs/01_methods.ipynb 141
 @multi
 def compute_success(models):
     """Compute the success of the two strategies under consideration."""
@@ -1363,7 +1001,7 @@ def compute_success(models):
         ΠB.append(success_B)
     return ΠA, ΠB
 
-# %% ../nbs/01_methods.ipynb 184
+# %% ../nbs/01_methods.ipynb 147
 Z =  {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1383,7 +1021,7 @@ models = {"Z": Z,
           }
 
 models = thread_macro(models,
-                      create_all_profiles,
+                      create_profiles,
                       (assoc, "transition_indices", ["3-1", "3-2"]),
                       apply_profile_filters)
 profiles_filtered = ['1-1', '1-2', '1-3',
@@ -1406,7 +1044,7 @@ for result, expected in zip(result1[0], expected1[0]):
 for result, expected in zip(result1[1], expected1[1]):
   fastcore.test.test_close(result, expected)
 
-# %% ../nbs/01_methods.ipynb 187
+# %% ../nbs/01_methods.ipynb 150
 Z =  {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1426,7 +1064,7 @@ models = {"Z": Z,
           }
 
 models = thread_macro(models,
-                      create_all_profiles,
+                      create_profiles,
                       (assoc, "transition_indices", ["3-1", "3-2"]),
                       apply_profile_filters)
 profiles_filtered = ['1-1', '1-2', '1-3',
@@ -1478,7 +1116,7 @@ for result, expected in zip(result2[0], expected2[0]):
 for result, expected in zip(result2[1], expected2[1]):
   fastcore.test.test_close(result, expected)
 
-# %% ../nbs/01_methods.ipynb 190
+# %% ../nbs/01_methods.ipynb 153
 Z =  {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1498,7 +1136,7 @@ models = {"Z": Z,
           }
 
 models = thread_macro(models,
-                      create_all_profiles,
+                      create_profiles,
                       (assoc, "transition_indices", ["3-1", "3-2"]),
                       apply_profile_filters)
 profiles_filtered = ['1-1', '1-2', '1-3',
@@ -1555,12 +1193,12 @@ for result, expected in zip(result2[0], expected2[0]):
 for result, expected in zip(result2[1], expected2[1]):
   fastcore.test.test_close(result, expected)
 
-# %% ../nbs/01_methods.ipynb 192
+# %% ../nbs/01_methods.ipynb 155
 def vals(d:dict):
     "Return the values of a dictionary."
     return d.values()
 
-# %% ../nbs/01_methods.ipynb 193
+# %% ../nbs/01_methods.ipynb 156
 def infer_n_models(models):
     "Infer the number of models from the model payoffs."
     try:
@@ -1580,7 +1218,7 @@ def infer_n_models(models):
                          `payoffs` is structured incorrectly""")
     return n_models
 
-# %% ../nbs/01_methods.ipynb 198
+# %% ../nbs/01_methods.ipynb 161
 @method(build_transition_matrix, 'multiple-populations')
 def build_transition_matrix(models: dict  # A dictionary that contains the parameters in `ModelTypeEGTMultiple`
                             ):
@@ -1615,7 +1253,7 @@ def build_transition_matrix(models: dict  # A dictionary that contains the param
     return {**models, 'transition_matrix': M}
 
 
-# %% ../nbs/01_methods.ipynb 204
+# %% ../nbs/01_methods.ipynb 167
 β = 1
 Z = {"S1": 50, "S2": 50, "S3": 50}
 allowed_sectors = {"P3": ["S3"],
@@ -1633,7 +1271,7 @@ models = {"dispatch-type": "multiple-populations",
          }
 
 models = thread_macro(models,
-                      create_all_profiles,
+                      create_profiles,
                       apply_profile_filters)
 
 payoffs = {}
@@ -1648,7 +1286,7 @@ result = build_transition_matrix(models)['transition_matrix']
 result_sums = np.sum(result, axis=-1)
 fastcore.test.test_close(result_sums, 1)
 
-# %% ../nbs/01_methods.ipynb 208
+# %% ../nbs/01_methods.ipynb 171
 @multi
 def compute_success_analytical(models):
     return models.get('success_analytical_derivation')
@@ -1717,7 +1355,7 @@ def compute_success_analytical(models):
     return SA, SB
 
 
-# %% ../nbs/01_methods.ipynb 209
+# %% ../nbs/01_methods.ipynb 172
 Z = {"S2": 10, "S1": 10}
 β = 1
 sector_strategies = {"S2": [3, 4],
@@ -1735,7 +1373,7 @@ models = {"dispatch-type": "multiple-populations",
           }
 
 models = thread_macro(models,
-                      create_all_profiles,
+                      create_profiles,
                       apply_profile_filters)
 
 payoffs = {}
@@ -1786,7 +1424,7 @@ for row_ind in range(M.shape[2]):
             fastcore.test.test_close(M[model_ind, col_ind, row_ind],
                                      result[model_ind, col_ind, row_ind])
 
-# %% ../nbs/01_methods.ipynb 212
+# %% ../nbs/01_methods.ipynb 175
 def payoffs_encanacao_2016(models):
     names = ['b_r', 'b_s', 'c_s', 'c_t', 'σ']
     b_r, b_s, c_s, c_t, σ = [models[k] for k in names]
@@ -1842,7 +1480,7 @@ def payoffs_encanacao_2016(models):
     payoffs["5-3-1"] = payoffs["C-C-C"]
     return {**models, "payoffs": payoffs}
 
-# %% ../nbs/01_methods.ipynb 213
+# %% ../nbs/01_methods.ipynb 176
 Z = {"S3": 50, "S2": 50, "S1": 50}
 β = 0.08
 sector_strategies = {"S3": [4, 5],
@@ -1867,7 +1505,7 @@ models = {"dispatch-type": "multiple-populations",
           }
 
 models = thread_macro(models,
-                      create_all_profiles,
+                      create_profiles,
                       apply_profile_filters,
                       payoffs_encanacao_2016,
                       build_transition_matrix,

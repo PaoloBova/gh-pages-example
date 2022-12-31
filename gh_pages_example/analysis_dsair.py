@@ -7,6 +7,7 @@ __all__ = ['valid_dtypes', 'build_DSAIR']
 from .conditions import *
 from .data_utils import *
 from .methods import *
+from .model_utils import *
 from .payoffs import *
 from .plot_utils import *
 from .types import *

@@ -4,6 +4,9 @@
 __all__ = ['plot_strategy_distribution', 'plot_heatmap']
 
 # %% ../nbs/plots_utils.ipynb 2
+from .model_utils import *
+from .utils import *
+
 import fastcore.test
 import matplotlib as mpl
 import matplotlib.pyplot as plt

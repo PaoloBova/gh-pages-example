@@ -11,6 +11,7 @@ import functools
 from .utils import *
 from .types import *
 from .methods import *
+from .model_utils import *
 import itertools
 import math
 import typing
