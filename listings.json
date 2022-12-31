@@ -1,0 +1,21 @@
+[
+  {
+    "listing": "/blog/index.html",
+    "items": [
+      "/blog/Posts/2022-10-27-blog1/index.html"
+    ]
+  },
+  {
+    "listing": "/Analysis/index.html",
+    "items": [
+      "/Analysis/analysis_dsair.html"
+    ]
+  },
+  {
+    "listing": "/Payoffs/index.html",
+    "items": [
+      "/Payoffs/payoffs1.html",
+      "/Payoffs/payoffs2.html"
+    ]
+  }
+]

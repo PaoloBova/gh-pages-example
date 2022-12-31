@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.78">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="A set of functions that I commonly use in notebooks">
+
+<title>gh-pages-example - Utilities</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="gh-pages-example - Utilities">
+<meta property="og:description" content="A set of functions that I commonly use in notebooks">
+<meta property="og:site-name" content="gh-pages-example">
+<meta name="twitter:title" content="gh-pages-example - Utilities">
+<meta name="twitter:description" content="A set of functions that I commonly use in notebooks">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar docked nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">gh-pages-example</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./blog/index.html" rel="" target="">
+ <span class="menu-text">Research</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./blog/index.html" rel="" target="">
+ <span class="menu-text">Blog</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/paolobova/gh-pages-example" rel="" target=""><i class="bi bi-github" role="img" aria-label="Github respository">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Utilities</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation docked overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./analytical_conditions.html" class="sidebar-item-text sidebar-link">Analytical conditions</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./data_utils.html" class="sidebar-item-text sidebar-link">Data utilities</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./methods.html" class="sidebar-item-text sidebar-link">Methods in Evolutionary Game Theory</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model_utils.html" class="sidebar-item-text sidebar-link">Model Utilities</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./plots_utils.html" class="sidebar-item-text sidebar-link">Plot utilities</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">References</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./types.html" class="sidebar-item-text sidebar-link">Types</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./utils.html" class="sidebar-item-text sidebar-link active">Utilities</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">Methods</span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./Payoffs/index.html" class="sidebar-item-text sidebar-link">Payoffs</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Payoffs/payoffs1.html" class="sidebar-item-text sidebar-link">Payoff Matrices (part 1)</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Payoffs/payoffs2.html" class="sidebar-item-text sidebar-link">Payoff Matrices (part 2)</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./Analysis/index.html" class="sidebar-item-text sidebar-link">Analysis</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Analysis/analysis_dsair.html" class="sidebar-item-text sidebar-link">Analysis of the DSAIR model</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#thread_macro" id="toc-thread_macro" class="nav-link active" data-scroll-target="#thread_macro">thread_macro</a></li>
+  <li><a href="#assoc" id="toc-assoc" class="nav-link" data-scroll-target="#assoc">assoc</a></li>
+  <li><a href="#get" id="toc-get" class="nav-link" data-scroll-target="#get">get</a></li>
+  <li><a href="#broadcast_concatenate_axes" id="toc-broadcast_concatenate_axes" class="nav-link" data-scroll-target="#broadcast_concatenate_axes">broadcast_concatenate_axes</a></li>
+  <li><a href="#build_grid_from_axes" id="toc-build_grid_from_axes" class="nav-link" data-scroll-target="#build_grid_from_axes">build_grid_from_axes</a></li>
+  <li><a href="#clojure-multimethods-in-python" id="toc-clojure-multimethods-in-python" class="nav-link" data-scroll-target="#clojure-multimethods-in-python">Clojure multimethods in python</a>
+  <ul>
+  <li><a href="#multi" id="toc-multi" class="nav-link" data-scroll-target="#multi">multi</a></li>
+  <li><a href="#method" id="toc-method" class="nav-link" data-scroll-target="#method">method</a></li>
+  <li><a href="#examples-and-tests" id="toc-examples-and-tests" class="nav-link" data-scroll-target="#examples-and-tests">Examples and tests</a></li>
+  <li><a href="#multi.._inner" id="toc-multi.._inner" class="nav-link" data-scroll-target="#multi.._inner">multi.<locals>._inner</locals></a></li>
+  <li><a href="#multi.._inner-1" id="toc-multi.._inner-1" class="nav-link" data-scroll-target="#multi.._inner-1">multi.<locals>._inner</locals></a></li>
+  <li><a href="#multi.._inner-2" id="toc-multi.._inner-2" class="nav-link" data-scroll-target="#multi.._inner-2">multi.<locals>._inner</locals></a></li>
+  <li><a href="#multi.._inner-3" id="toc-multi.._inner-3" class="nav-link" data-scroll-target="#multi.._inner-3">multi.<locals>._inner</locals></a></li>
+  </ul></li>
+  <li><a href="#string_to_tuple-utility" id="toc-string_to_tuple-utility" class="nav-link" data-scroll-target="#string_to_tuple-utility"><code>string_to_tuple</code> utility</a>
+  <ul>
+  <li><a href="#string_to_tuple" id="toc-string_to_tuple" class="nav-link" data-scroll-target="#string_to_tuple">string_to_tuple</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/PaoloBova/gh-pages-example/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block">Utilities</h1>
+</div>
+
+<div>
+  <div class="description">
+    A set of functions that I commonly use in notebooks
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/utils.py#L15" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="thread_macro" class="level3">
+<h3 class="anchored" data-anchor-id="thread_macro">thread_macro</h3>
+<blockquote class="blockquote">
+<pre><code> thread_macro (current_value, *funcs, identifier='self')</code></pre>
+</blockquote>
+<p>Pipes current_value through each function in funcs.</p>
+<p>Each element in funcs is either a function or a list/tuple containing a function followed by its other arguments. This function imitates the Clojure as-if threading macro.</p>
+<p>Notes: By default current_value is threaded as the first argument of the function call. Yet, one can use the syntax [func, arg1, “self”, arg2] (or (func, arg1, “self”, arg2)) so that current_value will instead be threaded in whatever place “self” would be. If you need to, you can set this “self” identifier to a different value.</p>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/utils.py#L43" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="assoc" class="level3">
+<h3 class="anchored" data-anchor-id="assoc">assoc</h3>
+<blockquote class="blockquote">
+<pre><code> assoc (m:dict, *kargs)</code></pre>
+</blockquote>
+<p>Add every two elements in kargs as a new key-value item in dictionary <code>m</code>.</p>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/utils.py#L49" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="get" class="level3">
+<h3 class="anchored" data-anchor-id="get">get</h3>
+<blockquote class="blockquote">
+<pre><code> get (m:dict, k:str)</code></pre>
+</blockquote>
+<p>Get attribute k from dictionary m.</p>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/utils.py#L54" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="broadcast_concatenate_axes" class="level3">
+<h3 class="anchored" data-anchor-id="broadcast_concatenate_axes">broadcast_concatenate_axes</h3>
+<blockquote class="blockquote">
+<pre><code> broadcast_concatenate_axes (ax1, ax2)</code></pre>
+</blockquote>
+<p>Broadcast both numpy axes and concatenate along last dimension</p>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/utils.py#L70" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="build_grid_from_axes" class="level3">
+<h3 class="anchored" data-anchor-id="build_grid_from_axes">build_grid_from_axes</h3>
+<blockquote class="blockquote">
+<pre><code> build_grid_from_axes (axes:list, override:bool=False)</code></pre>
+</blockquote>
+<p>Build a numpy array with all combinations of elements specified in axes.</p>
+<table class="table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>axes</td>
+<td>list</td>
+<td></td>
+<td>Each axis in axes gives an array of values that should be repeated for each value in the other axes. Primitive types and lists of primitive types are first promoted to numpy arrays.</td>
+</tr>
+<tr class="even">
+<td>override</td>
+<td>bool</td>
+<td>False</td>
+<td>whether to build the grid if it is very large</td>
+</tr>
+<tr class="odd">
+<td><strong>Returns</strong></td>
+<td><strong>ndarray</strong></td>
+<td></td>
+<td><strong>A 2D numpy array with all combinations of elements specified in axes</strong></td>
+</tr>
+</tbody>
+</table>
+<p>We can build simple grids</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>build_grid_from_axes([<span class="bu">range</span>(<span class="dv">2</span>), <span class="bu">range</span>(<span class="dv">3</span>)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>array([[0, 0],
+       [0, 1],
+       [0, 2],
+       [1, 0],
+       [1, 1],
+       [1, 2]])</code></pre>
+</div>
+</div>
+<p>Or build more arbitrary grids</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>build_grid_from_axes([[<span class="fl">0.1</span>, <span class="fl">0.7</span>, <span class="fl">0.8</span>], [<span class="dv">5</span>, <span class="dv">4</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>array([[0.1, 5. ],
+       [0.1, 4. ],
+       [0.7, 5. ],
+       [0.7, 4. ],
+       [0.8, 5. ],
+       [0.8, 4. ]])</code></pre>
+</div>
+</div>
+<p><a href="https://PaoloBova.github.io/gh-pages-example/utils.html#build_grid_from_axes"><code>build_grid_from_axes</code></a> throws an error if you try to build a grid which has &gt; 5 million rows. This error should help you avoid accidentally crashing your computer with unreasonably large grids.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> fastcore.test.ExceptionExpected(ex<span class="op">=</span><span class="pp">ValueError</span>):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    build_grid_from_axes([<span class="bu">range</span>(<span class="dv">500000</span>), <span class="bu">range</span>(<span class="dv">200000</span>)], override<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="clojure-multimethods-in-python" class="level2">
+<h2 class="anchored" data-anchor-id="clojure-multimethods-in-python">Clojure multimethods in python</h2>
+<p><strong>Disclaimer:</strong> Unlike the code above, this code is not my invention. All credit goes to Adam Bard for coming up with this (and Guido for writing an earlier implementation). Adam Bard made this code freely available at https://adambard.com/blog/implementing-multimethods-in-python/.</p>
+<p>Alternatively, this package exists but only works based on type hints: https://pypi.org/project/multimethod/#description. In my opinion, the clojure dispatch function approach is far more versatile. Big thanks to Adam Bard for implementing this.</p>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/utils.py#L88" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="multi" class="level3">
+<h3 class="anchored" data-anchor-id="multi">multi</h3>
+<blockquote class="blockquote">
+<pre><code> multi (dispatch_fn)</code></pre>
+</blockquote>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/utils.py#L101" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="method" class="level3">
+<h3 class="anchored" data-anchor-id="method">method</h3>
+<blockquote class="blockquote">
+<pre><code> method (dispatch_fn, dispatch_key=None)</code></pre>
+</blockquote>
+</section>
+<section id="examples-and-tests" class="level3">
+<h3 class="anchored" data-anchor-id="examples-and-tests">Examples and tests</h3>
+<hr>
+</section>
+<section id="multi.._inner" class="level3">
+<h3 class="anchored" data-anchor-id="multi.._inner">multi.<locals>._inner</locals></h3>
+<blockquote class="blockquote">
+<pre><code> multi.&lt;locals&gt;._inner (*args, **kwargs)</code></pre>
+</blockquote>
+<hr>
+</section>
+<section id="multi.._inner-1" class="level3">
+<h3 class="anchored" data-anchor-id="multi.._inner-1">multi.<locals>._inner</locals></h3>
+<blockquote class="blockquote">
+<pre><code> multi.&lt;locals&gt;._inner (*args, **kwargs)</code></pre>
+</blockquote>
+<hr>
+</section>
+<section id="multi.._inner-2" class="level3">
+<h3 class="anchored" data-anchor-id="multi.._inner-2">multi.<locals>._inner</locals></h3>
+<blockquote class="blockquote">
+<pre><code> multi.&lt;locals&gt;._inner (*args, **kwargs)</code></pre>
+</blockquote>
+<hr>
+</section>
+<section id="multi.._inner-3" class="level3">
+<h3 class="anchored" data-anchor-id="multi.._inner-3">multi.<locals>._inner</locals></h3>
+<blockquote class="blockquote">
+<pre><code> multi.&lt;locals&gt;._inner (*args, **kwargs)</code></pre>
+</blockquote>
+</section>
+</section>
+<section id="string_to_tuple-utility" class="level2">
+<h2 class="anchored" data-anchor-id="string_to_tuple-utility"><a href="https://PaoloBova.github.io/gh-pages-example/utils.html#string_to_tuple"><code>string_to_tuple</code></a> utility</h2>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/utils.py#L135" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="string_to_tuple" class="level3">
+<h3 class="anchored" data-anchor-id="string_to_tuple">string_to_tuple</h3>
+<blockquote class="blockquote">
+<pre><code> string_to_tuple (string)</code></pre>
+</blockquote>
+<p>Convert a string containing only integers and dashes to a tuple of integers in reverse order.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.78">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="A set of methods for solving Evolutionary Games (see Nowak 2006 and the references section)">
+
+<title>gh-pages-example - Methods in Evolutionary Game Theory</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="gh-pages-example - Methods in Evolutionary Game Theory">
+<meta property="og:description" content="A set of methods for solving Evolutionary Games (see Nowak 2006 and the references section)">
+<meta property="og:site-name" content="gh-pages-example">
+<meta name="twitter:title" content="gh-pages-example - Methods in Evolutionary Game Theory">
+<meta name="twitter:description" content="A set of methods for solving Evolutionary Games (see Nowak 2006 and the references section)">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar docked nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">gh-pages-example</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./blog/index.html" rel="" target="">
+ <span class="menu-text">Research</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./blog/index.html" rel="" target="">
+ <span class="menu-text">Blog</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/paolobova/gh-pages-example" rel="" target=""><i class="bi bi-github" role="img" aria-label="Github respository">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Methods in Evolutionary Game Theory</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation docked overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./analytical_conditions.html" class="sidebar-item-text sidebar-link">Analytical conditions</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./data_utils.html" class="sidebar-item-text sidebar-link">Data utilities</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./methods.html" class="sidebar-item-text sidebar-link active">Methods in Evolutionary Game Theory</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model_utils.html" class="sidebar-item-text sidebar-link">Model Utilities</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./plots_utils.html" class="sidebar-item-text sidebar-link">Plot utilities</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">References</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./types.html" class="sidebar-item-text sidebar-link">Types</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./utils.html" class="sidebar-item-text sidebar-link">Utilities</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">Methods</span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./Payoffs/index.html" class="sidebar-item-text sidebar-link">Payoffs</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Payoffs/payoffs1.html" class="sidebar-item-text sidebar-link">Payoff Matrices (part 1)</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Payoffs/payoffs2.html" class="sidebar-item-text sidebar-link">Payoff Matrices (part 2)</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./Analysis/index.html" class="sidebar-item-text sidebar-link">Analysis</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Analysis/analysis_dsair.html" class="sidebar-item-text sidebar-link">Analysis of the DSAIR model</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#evolutionary-dynamics-in-finite-populations" id="toc-evolutionary-dynamics-in-finite-populations" class="nav-link active" data-scroll-target="#evolutionary-dynamics-in-finite-populations">Evolutionary Dynamics in Finite Populations</a>
+  <ul>
+  <li><a href="#fermi-social-learning" id="toc-fermi-social-learning" class="nav-link" data-scroll-target="#fermi-social-learning">Fermi social learning</a>
+  <ul class="collapse">
+  <li><a href="#derivation" id="toc-derivation" class="nav-link" data-scroll-target="#derivation">Derivation</a></li>
+  <li><a href="#definition" id="toc-definition" class="nav-link" data-scroll-target="#definition">Definition</a></li>
+  </ul></li>
+  <li><a href="#fermi_learning" id="toc-fermi_learning" class="nav-link" data-scroll-target="#fermi_learning">fermi_learning</a>
+  <ul class="collapse">
+  <li><a href="#examples-and-tests" id="toc-examples-and-tests" class="nav-link" data-scroll-target="#examples-and-tests">Examples and Tests</a></li>
+  </ul></li>
+  <li><a href="#fixation-rate" id="toc-fixation-rate" class="nav-link" data-scroll-target="#fixation-rate">Fixation rate</a>
+  <ul class="collapse">
+  <li><a href="#derivation-1" id="toc-derivation-1" class="nav-link" data-scroll-target="#derivation-1">Derivation</a></li>
+  <li><a href="#definition-1" id="toc-definition-1" class="nav-link" data-scroll-target="#definition-1">Definition</a></li>
+  </ul></li>
+  <li><a href="#fixation_rate" id="toc-fixation_rate" class="nav-link" data-scroll-target="#fixation_rate">fixation_rate</a>
+  <ul class="collapse">
+  <li><a href="#examples-and-tests-1" id="toc-examples-and-tests-1" class="nav-link" data-scroll-target="#examples-and-tests-1">Examples and Tests</a></li>
+  </ul></li>
+  <li><a href="#fixation_rate_stable" id="toc-fixation_rate_stable" class="nav-link" data-scroll-target="#fixation_rate_stable">fixation_rate_stable</a></li>
+  <li><a href="#build-transition-matrix" id="toc-build-transition-matrix" class="nav-link" data-scroll-target="#build-transition-matrix">Build transition matrix</a></li>
+  <li><a href="#modeltypeegt" id="toc-modeltypeegt" class="nav-link" data-scroll-target="#modeltypeegt">ModelTypeEGT</a></li>
+  <li><a href="#build_transition_matrix" id="toc-build_transition_matrix" class="nav-link" data-scroll-target="#build_transition_matrix">build_transition_matrix</a>
+  <ul class="collapse">
+  <li><a href="#examples-and-tests-2" id="toc-examples-and-tests-2" class="nav-link" data-scroll-target="#examples-and-tests-2">Examples and Tests</a></li>
+  <li><a href="#example-3" id="toc-example-3" class="nav-link" data-scroll-target="#example-3">Example 3</a></li>
+  </ul></li>
+  <li><a href="#find-ergodic-strategy-distribution" id="toc-find-ergodic-strategy-distribution" class="nav-link" data-scroll-target="#find-ergodic-strategy-distribution">Find ergodic strategy distribution</a>
+  <ul class="collapse">
+  <li><a href="#examples-and-tests-3" id="toc-examples-and-tests-3" class="nav-link" data-scroll-target="#examples-and-tests-3">Examples and Tests</a></li>
+  </ul></li>
+  <li><a href="#find_ergodic_distribution" id="toc-find_ergodic_distribution" class="nav-link" data-scroll-target="#find_ergodic_distribution">find_ergodic_distribution</a></li>
+  <li><a href="#run-full-markov-chain-algorithm" id="toc-run-full-markov-chain-algorithm" class="nav-link" data-scroll-target="#run-full-markov-chain-algorithm">Run full markov chain algorithm</a></li>
+  <li><a href="#markov_chain" id="toc-markov_chain" class="nav-link" data-scroll-target="#markov_chain">markov_chain</a></li>
+  </ul></li>
+  <li><a href="#multiple-populations" id="toc-multiple-populations" class="nav-link" data-scroll-target="#multiple-populations">Multiple Populations</a>
+  <ul>
+  <li><a href="#building-blocks" id="toc-building-blocks" class="nav-link" data-scroll-target="#building-blocks">Building blocks</a>
+  <ul class="collapse">
+  <li><a href="#payoffs" id="toc-payoffs" class="nav-link" data-scroll-target="#payoffs">Payoffs</a></li>
+  <li><a href="#sector-strategies" id="toc-sector-strategies" class="nav-link" data-scroll-target="#sector-strategies">Sector strategies</a></li>
+  <li><a href="#allowed_sectors" id="toc-allowed_sectors" class="nav-link" data-scroll-target="#allowed_sectors">Allowed_sectors</a></li>
+  <li><a href="#sampling-rule" id="toc-sampling-rule" class="nav-link" data-scroll-target="#sampling-rule">Sampling rule</a></li>
+  </ul></li>
+  <li><a href="#multi.._inner" id="toc-multi.._inner" class="nav-link" data-scroll-target="#multi.._inner">multi.<locals>._inner</locals></a></li>
+  <li><a href="#multi.._inner-1" id="toc-multi.._inner-1" class="nav-link" data-scroll-target="#multi.._inner-1">multi.<locals>._inner</locals></a></li>
+  <li><a href="#profile-filters" id="toc-profile-filters" class="nav-link" data-scroll-target="#profile-filters">Profile filters</a></li>
+  <li><a href="#create-all-recurrent-states" id="toc-create-all-recurrent-states" class="nav-link" data-scroll-target="#create-all-recurrent-states">Create all recurrent states</a></li>
+  <li><a href="#create_recurrent_states" id="toc-create_recurrent_states" class="nav-link" data-scroll-target="#create_recurrent_states">create_recurrent_states</a></li>
+  <li><a href="#check-transition-is-valid" id="toc-check-transition-is-valid" class="nav-link" data-scroll-target="#check-transition-is-valid">Check transition is valid</a></li>
+  <li><a href="#valid_transition" id="toc-valid_transition" class="nav-link" data-scroll-target="#valid_transition">valid_transition</a></li>
+  <li><a href="#a-multimethod-for-computing-the-likelihoods-of-different-strategy-profiles" id="toc-a-multimethod-for-computing-the-likelihoods-of-different-strategy-profiles" class="nav-link" data-scroll-target="#a-multimethod-for-computing-the-likelihoods-of-different-strategy-profiles">A multimethod for computing the likelihoods of different strategy profiles</a></li>
+  <li><a href="#multi.._inner-2" id="toc-multi.._inner-2" class="nav-link" data-scroll-target="#multi.._inner-2">multi.<locals>._inner</locals></a></li>
+  <li><a href="#multi.._inner-3" id="toc-multi.._inner-3" class="nav-link" data-scroll-target="#multi.._inner-3">multi.<locals>._inner</locals></a></li>
+  <li><a href="#multi.._inner-4" id="toc-multi.._inner-4" class="nav-link" data-scroll-target="#multi.._inner-4">multi.<locals>._inner</locals></a>
+  <ul class="collapse">
+  <li><a href="#tests-for-compute_profile_dist" id="toc-tests-for-compute_profile_dist" class="nav-link" data-scroll-target="#tests-for-compute_profile_dist">Tests for <code>compute_profile_dist</code></a></li>
+  </ul></li>
+  <li><a href="#a-multimethod-for-computing-each-strategys-success" id="toc-a-multimethod-for-computing-each-strategys-success" class="nav-link" data-scroll-target="#a-multimethod-for-computing-each-strategys-success">A multimethod for computing each strategy’s success</a></li>
+  <li><a href="#multi.._inner-5" id="toc-multi.._inner-5" class="nav-link" data-scroll-target="#multi.._inner-5">multi.<locals>._inner</locals></a></li>
+  <li><a href="#multi.._inner-6" id="toc-multi.._inner-6" class="nav-link" data-scroll-target="#multi.._inner-6">multi.<locals>._inner</locals></a>
+  <ul class="collapse">
+  <li><a href="#tests-for-compute_success" id="toc-tests-for-compute_success" class="nav-link" data-scroll-target="#tests-for-compute_success">Tests for <code>compute_success</code></a></li>
+  </ul></li>
+  <li><a href="#infer-number-of-models" id="toc-infer-number-of-models" class="nav-link" data-scroll-target="#infer-number-of-models">Infer number of models</a></li>
+  <li><a href="#vals" id="toc-vals" class="nav-link" data-scroll-target="#vals">vals</a></li>
+  <li><a href="#infer_n_models" id="toc-infer_n_models" class="nav-link" data-scroll-target="#infer_n_models">infer_n_models</a>
+  <ul class="collapse">
+  <li><a href="#tests-for-infer_n_models" id="toc-tests-for-infer_n_models" class="nav-link" data-scroll-target="#tests-for-infer_n_models">Tests for <code>infer_n_models</code></a></li>
+  </ul></li>
+  <li><a href="#an-algorithm-for-building-the-transition-matrix" id="toc-an-algorithm-for-building-the-transition-matrix" class="nav-link" data-scroll-target="#an-algorithm-for-building-the-transition-matrix">An algorithm for building the transition matrix</a>
+  <ul class="collapse">
+  <li><a href="#tests-and-examples-for-build_transition_matrix-for-multiple-populations" id="toc-tests-and-examples-for-build_transition_matrix-for-multiple-populations" class="nav-link" data-scroll-target="#tests-and-examples-for-build_transition_matrix-for-multiple-populations">Tests and examples for <code>build_transition_matrix</code> for multiple populations</a></li>
+  </ul></li>
+  <li><a href="#payoffs_encanacao_2016" id="toc-payoffs_encanacao_2016" class="nav-link" data-scroll-target="#payoffs_encanacao_2016">payoffs_encanacao_2016</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/PaoloBova/gh-pages-example/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block">Methods in Evolutionary Game Theory</h1>
+</div>
+
+<div>
+  <div class="description">
+    A set of methods for solving Evolutionary Games (see Nowak 2006 and the references section)
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>np.set_printoptions(suppress <span class="op">=</span> <span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="evolutionary-dynamics-in-finite-populations" class="level2">
+<h2 class="anchored" data-anchor-id="evolutionary-dynamics-in-finite-populations">Evolutionary Dynamics in Finite Populations</h2>
+<p>We examine a finite population of players using different strategies who engage in social learning.</p>
+<p>In the limit of small mutations, most of the time everyone plays the same strategy. States in which everyone plays the same strategy are known as <strong>monomorphic states</strong>. Occassionally, mutant strategies can fixate in the population, resulting in everyone adopting the same new strategy. We can use Markov Chains to analyse the relative frequencies with which each strategy is played by the population.</p>
+<p>The steps for computing the ergodic (i.e.&nbsp;long-run, stationary) strategy distribution is as follows:</p>
+<ol type="1">
+<li>Build a transition matrix between all monomorphic states</li>
+<li>Find the ergodic distribution for the markov chain defined using this transition matrix</li>
+</ol>
+<section id="fermi-social-learning" class="level3">
+<h3 class="anchored" data-anchor-id="fermi-social-learning">Fermi social learning</h3>
+<blockquote class="blockquote">
+<p>A Fermi social learning rule means that individuals make pairwise comparisons between their own strategy and and another strategy in the population that they may choose to copy.</p>
+</blockquote>
+<section id="derivation" class="level4">
+<h4 class="anchored" data-anchor-id="derivation">Derivation</h4>
+<p>Each period of the evolutionary game involves individuals being randomly selected to play against one another individual.</p>
+<p>Letting <span class="math inline">\(Z\)</span> denote the size of the population, and <span class="math inline">\(π\)</span> denote the game’s payoff matrix, we can compute the fitness of a strategy, <span class="math inline">\(B\)</span> for example, when <span class="math inline">\(k\)</span> individuals are of type <span class="math inline">\(B\)</span> as follows:</p>
+<p><span class="math display">\[\begin{equation}
+ΠB_k = πBA \frac{k-1}{Z - 1} + πBB \frac{Z-k}{Z- 1}
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(πBA\)</span> and <span class="math inline">\(πBB\)</span> are the payoffs for playing <span class="math inline">\(B\)</span> against type <span class="math inline">\(A\)</span> or <span class="math inline">\(B\)</span> respectively.</p>
+<p>The <strong>Fermi social learning rule</strong> adopts strategy <span class="math inline">\(B\)</span> selected from the population over their current strategy <span class="math inline">\(A\)</span> with probability given by:</p>
+<p><span class="math display">\[\begin{equation}
+Pr(adopt \, B | k) = \frac{1}{(1 + \exp^{-\beta (ΠB_k - ΠA_k)})}
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(ΠB_k - ΠA_k\)</span> is the relative fitness of strategy <span class="math inline">\(B\)</span> over <span class="math inline">\(A\)</span> in a population with <span class="math inline">\(k\)</span> individuals of type <span class="math inline">\(B\)</span>, the rest of type <span class="math inline">\(A\)</span>. Notice how the larger the relative fitness, the closer the denominator, and therefore the probability, is to <span class="math inline">\(1\)</span>.</p>
+<p>Using the Fermi social learning rule above, we can write the probability of increasing the number of type <span class="math inline">\(B\)</span> individuals as</p>
+<p><span class="math display">\[\begin{equation}
+T^+_B(k) = \frac{Z-k}{Z} \frac{k}{Z} Pr(adopt \, B | k)
+\end{equation}\]</span> Z as an individual of type <span class="math inline">\(A\)</span> needs to randomly be chosen to compare their strategy against someone of type <span class="math inline">\(B\)</span>.</p>
+<p>and the probability of decreasing the number of type <span class="math inline">\(B\)</span> individuals as</p>
+<p><span class="math display">\[\begin{equation}
+T^-_B(k) = \frac{k}{Z} \frac{Z-k}{Z} Pr(adopt \, A | k)
+\end{equation}\]</span></p>
+<p>as an individual of type <span class="math inline">\(B\)</span> needs to randomly be chosen to compare their strategy against someone of type <span class="math inline">\(A\)</span>.</p>
+<p>We will often employ their ratio, which is:</p>
+<p><span class="math display">\[\begin{equation}
+\frac{T^-_B(k)}{T^+_B(k)} = \frac{Pr(adopt \, A | k) }{Pr(adopt \, B | k)} = \frac{1 + \exp^{-\beta (ΠB_k - ΠA_k)}}{1 + \exp^{-\beta (ΠA_k - ΠB_k)}}
+\end{equation}\]</span></p>
+<p>Notice that <span class="math inline">\(\frac{1 + \exp^x}{1 + \exp^{-x}} = \exp^{x}\)</span></p>
+<p>So, this ratio simplifies to <span class="math inline">\(\frac{T^-_B(k)}{T^+_B(k)} = \exp^{-\beta (ΠB_k - ΠA_k)}\)</span></p>
+</section>
+<section id="definition" class="level4">
+<h4 class="anchored" data-anchor-id="definition">Definition</h4>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/methods.py#L29" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+</section>
+<section id="fermi_learning" class="level3">
+<h3 class="anchored" data-anchor-id="fermi_learning">fermi_learning</h3>
+<blockquote class="blockquote">
+<pre><code> fermi_learning (fitnessA:nptyping.ndarray.NDArray,
+                 fitnessB:nptyping.ndarray.NDArray,
+                 β:nptyping.ndarray.NDArray)</code></pre>
+</blockquote>
+<p>Compute the likelihood that a player with strategy A adopts strategy B using the fermi function.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>fitnessA</td>
+<td>NDArray</td>
+<td>fitness of strategy A</td>
+</tr>
+<tr class="even">
+<td>fitnessB</td>
+<td>NDArray</td>
+<td>fitness of strategy B</td>
+</tr>
+<tr class="odd">
+<td>β</td>
+<td>NDArray</td>
+<td>learning rate</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>NDArray</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<section id="examples-and-tests" class="level4">
+<h4 class="anchored" data-anchor-id="examples-and-tests">Examples and Tests</h4>
+<p>When each strategy has the same fitness, then the likelihood that a player adopts strategy <span class="math inline">\(B\)</span> is 50%, no matter the value of <span class="math inline">\(\beta\)</span>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> fermi_learning(np.array([<span class="dv">5</span>]),</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                   np.array([<span class="dv">5</span>]),</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                   np.array([<span class="dv">1</span>]),)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>nptyping.assert_isinstance(x, nptyping.NDArray[nptyping.Shape[<span class="st">"1"</span>], typing.Any])</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>fastcore.test.test_eq(x, <span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="fixation-rate" class="level3">
+<h3 class="anchored" data-anchor-id="fixation-rate">Fixation rate</h3>
+<blockquote class="blockquote">
+<p>The fixation rate for type B in a population of type A, <span class="math inline">\(\rho\)</span>, is defined as the probability that the appearance of a mutant of type B leads to the entire population adopting type B instead of A, i.e.&nbsp;what is the likelihood that a mutant of type B invades population A.</p>
+</blockquote>
+<section id="derivation-1" class="level4">
+<h4 class="anchored" data-anchor-id="derivation-1">Derivation</h4>
+<p>A derivation of the fixation rate defined below can be found in Nowak 2006 (reproduced below).</p>
+<blockquote class="blockquote">
+<p>Consider a one-dimensional stochastic process on a discrete state space, $ i {0, 1, , N}$ that represents the number of individuals in a population of <span class="math inline">\(N\)</span> individuals who are of type <span class="math inline">\(B\)</span>, the rest are type <span class="math inline">\(A\)</span>.</p>
+<p>In each stochastic event, the number of individuals of type <span class="math inline">\(B\)</span> can at most increase or decrease by 1.</p>
+<p>For a given number of individuals, <span class="math inline">\(i\)</span>, let <span class="math inline">\(a_i\)</span>, <span class="math inline">\(b_i\)</span>, and <span class="math inline">\(1 - a_i - b_i\)</span> represent the chance of an increase, decrease, or no change in <span class="math inline">\(i\)</span>.</p>
+<p>This stochastic process follows the transition matrix ,<span class="math inline">\(P\)</span> (<em>not to be confused with the transition matrices we discuss elsewhere!</em>)</p>
+<p><span class="math display">\[\begin{equation}
+P \, = \, \begin{pmatrix}
+1 &amp; 0 &amp; 0 &amp; \cdots &amp; 0 &amp; 0 &amp; 0\\
+b_1 &amp; (1 - a_1 - b_1) &amp; a_1 &amp; \cdots &amp; 0 &amp; 0 &amp; 0\\
+\vdots &amp; \vdots &amp; \vdots &amp; \ddots &amp; \vdots &amp; \vdots &amp; \vdots\\
+0 &amp; 0 &amp; 0 &amp; \cdots &amp; b_{n-1} &amp; (1 - a_{n-1} - b_{n-1}) &amp; a_{n-1}\\
+0 &amp; 0 &amp; 0 &amp; \cdots &amp; 0 &amp; 0 &amp; 1\\
+\end{pmatrix}
+\end{equation}\]</span></p>
+<p>Denote by <span class="math inline">\(x_i\)</span> the probability of reaching state <span class="math inline">\(N\)</span> when starting from <span class="math inline">\(i\)</span>.</p>
+<p>From transition matrix <span class="math inline">\(P\)</span> above, we can see that <span class="math inline">\(x_i\)</span> must satisfy:</p>
+<p><span class="math inline">\(x_0 = 0\)</span></p>
+<p><span class="math inline">\(x_i = b_i x_{i-1} + (1 - a_i - b_i) x_i + a_i x_{i+1}\)</span></p>
+<p><span class="math inline">\(x_N = 1\)</span></p>
+<p>The fixation rate for a mutant B in a population of type A is clearly <span class="math inline">\(x_1\)</span></p>
+<p>We can solve for <span class="math inline">\(x_i\)</span> by rewriting the above as <span class="math inline">\(b_i x_i - b_i x_{i-1} = a_i x_{i+1} - a_i x_i\)</span>.</p>
+<p>We can denote <span class="math inline">\(y_i = x_i - x_{i-1}\)</span> to simplify the above to <span class="math inline">\(y_{i+1} = \frac{b_i}{a_i} y_i\)</span></p>
+<p>Notice that <span class="math inline">\(\sum_{i=1}^N{y_i} = x_N - x_0 = 1\)</span> and that <span class="math inline">\(y_1 = x_1\)</span></p>
+<p>We can use the above to write <span class="math display">\[\begin{equation}
+x_1 + {\sum_{i=2}^N{y_i}} = x_1 (1 + {\sum_{i=1}^{N-1}{\prod_{j=1}^{i} \frac{b_j}{a_j}}}) = 1
+\end{equation}\]</span></p>
+<p>And so <span class="math display">\[\begin{equation}
+x_1 = \frac{1}{(1 + \sum_{i=1}^{N-1}{\prod_{j=1}^{i} \frac{b_j}{a_j}})}
+\end{equation}\]</span></p>
+<p>Note that <span class="math inline">\(x_1\)</span> is the fixation rate for a mutant <span class="math inline">\(B\)</span> in a population of type <span class="math inline">\(A\)</span>, often denoted as <span class="math inline">\(\rho\)</span>.</p>
+<p><em>Also note that <span class="math inline">\(1 - x_{N-1}\)</span> is the fixation rate for a mutant <span class="math inline">\(A\)</span> in a population of type <span class="math inline">\(B\)</span>. We could find expressions for all <span class="math inline">\(x_i\)</span> if we note that <span class="math inline">\(x_i = x_1 (1 + \sum_{j=1}^{i-1}{\prod_{k=1}^{j} \frac{b_k}{a_k}})\)</span> (see Nowak 2006 for further details).</em></p>
+</blockquote>
+<p>We can use our definitions above to determine when the fixation rate for a mutant <span class="math inline">\(B\)</span> in a population of type <span class="math inline">\(A\)</span> is greater than that for a mutant <span class="math inline">\(A\)</span> in a population of type <span class="math inline">\(B\)</span>.</p>
+<p>This condition requires that <span class="math inline">\(x_1 &gt; 1 - x_{N-1}\)</span>, i.e.&nbsp;<span class="math inline">\(\frac{1}{(1 + \sum_{i=1}^{N-1}{\prod_{j=1}^{i} \frac{b_j}{a_j}})} &gt; \frac{\prod_{j=1}^{N-1} \frac{b_j}{a_j}}{(1 + \sum_{i=1}^{N-1}{\prod_{j=1}^{i} \frac{b_j}{a_j}})}\)</span>.</p>
+<p>Using the fermi social learning rule and the aforementioned simplifications, we can see that this condition holds true whenever <span class="math inline">\(1 &gt; \exp^{-\beta \sum_{j=1}^{N-1}{\Pi_B(j) - \Pi_A(j)}}\)</span> which implies <span class="math inline">\(\sum_{j=1}^{N-1}{\Pi_B(j)} &gt; \sum_{j=1}^{N-1}{\Pi_A(j)}\)</span>.</p>
+<p>Lastly, we can make use of the equation <span class="math inline">\(\sum_{j=1}^{N-1}{j}=\frac{(N-1) N}{2}\)</span> to simplify this condition to <span class="math inline">\(\pi_{BA} + \pi_{BA} &gt; \pi_{AA} + \pi_{AB}\)</span></p>
+<p>This is exactly the risk dominance condition implied by 2 by 2 payoff matrices. The risk dominance condition has been used in the literature to offer a reason to motivate selecting one monomorphic equilibria over another in such games. In such games there is a precise connection between risk dominance and the monomorphic equilibria selected for by social learning. This connection disappears in games with larger payoff matrices (which is why theorists tends to consider the concept of stochastic stability instead, perhaps using Young’s method (Young 2003)).</p>
+<p>Even in games with more than 2 players (or populations), we can make use of this condition to tell us in which direction the fixation rate is stronger between two strategies. At times, this is enough to gain an intuition for the gradient of selection present in polymorphic states where multiple strategies coexist in one or more populations.</p>
+</section>
+<section id="definition-1" class="level4">
+<h4 class="anchored" data-anchor-id="definition-1">Definition</h4>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/methods.py#L39" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+</section>
+<section id="fixation_rate" class="level3">
+<h3 class="anchored" data-anchor-id="fixation_rate">fixation_rate</h3>
+<blockquote class="blockquote">
+<pre><code> fixation_rate (Tplus:list[nptyping.base_meta_classes.NDArray],
+                Tneg:list[nptyping.base_meta_classes.NDArray])</code></pre>
+</blockquote>
+<p>Calculate the likelihood that a mutant invades the population.</p>
+<table class="table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Tplus</td>
+<td>list</td>
+<td>A list of NDarrays, one array (of size n_models) for each possible number of mutants in the population; the probability of gaining one mutant</td>
+</tr>
+<tr class="even">
+<td>Tneg</td>
+<td>list</td>
+<td>A list of NDarrays, one array (of size n_models) for each possible number of mutants in the population; the probability of losing one mutant</td>
+</tr>
+<tr class="odd">
+<td><strong>Returns</strong></td>
+<td><strong>NDArray</strong></td>
+<td><strong>Fixation rates for the given strategy in each model</strong></td>
+</tr>
+</tbody>
+</table>
+<section id="examples-and-tests-1" class="level4">
+<h4 class="anchored" data-anchor-id="examples-and-tests-1">Examples and Tests</h4>
+<p>When the chance of gaining a mutant always equals the chance of losing a mutant, then the fixation rate will be <span class="math inline">\(\frac{1}{Z}\)</span></p>
+<p>Note that because we have to sample the population for a mutant and the player of the type being invaded, the chance of gaining or losing a mutant can be no greater than <span class="math inline">\(\frac{k}{Z} \frac{Z-k}{Z}\)</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>Z <span class="op">=</span> <span class="dv">2</span> <span class="co"># With Z=2, we only need to evaluate Tplus and Tneg for when k=1</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>Tplus_example <span class="op">=</span> [np.array([<span class="dv">1</span><span class="op">/</span><span class="dv">8</span>])]</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>Tneg_example <span class="op">=</span>  [np.array([<span class="dv">1</span><span class="op">/</span><span class="dv">8</span>])]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>fixation_rate_result <span class="op">=</span> fixation_rate(Tplus_example, Tneg_example)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>fastcore.test.test_eq(fixation_rate_result, np.array([<span class="fl">0.5</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>When the chance of gaining a mutant is half the chance of losing a mutant, then the fixation rate will be</p>
+<p><span class="math display">\[\begin{equation}
+\rho = \frac{1}{(1 + \sum_{j=1}^{Z-1}{2^j})}
+\end{equation}\]</span></p>
+<p>When <span class="math inline">\(Z=2\)</span>, we have <span class="math inline">\(\rho = \frac{1}{3}\)</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>Z <span class="op">=</span> <span class="dv">2</span> <span class="co"># With Z=2, we only need to evaluate Tplus and Tneg for when k=1</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>Tplus_example <span class="op">=</span> [np.array([<span class="fl">0.1</span>])]</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>Tneg_example <span class="op">=</span>  [np.array([<span class="fl">0.2</span>])]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>fixation_rate_result <span class="op">=</span> fixation_rate(Tplus_example, Tneg_example)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>fastcore.test.test_eq(fixation_rate_result, np.array([<span class="dv">1</span><span class="op">/</span><span class="dv">3</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We could instead consider an example where we have a mutant Defector (D) who appears in a population of Cooperators (C) playing a standard Prisoner’s Dilemma.</p>
+<p>We will consider an example of such a scenario where chance of gaining/losing a D player be given by <span class="math inline">\(\frac{1}{1 + e^{\pm \beta \frac{Z+1}{Z-1}}}\)</span>.</p>
+<p>The fixation rate will be given by the following expression:</p>
+<p><span class="math display">\[\begin{equation}
+\rho = \frac{1}{1 + \sum_{j=1}^{Z-1}{(\frac{1 + e^{- \beta \frac{Z+1}{Z-1}}}{1 + e^{\beta \frac{Z+1}{Z-1}}})^j}}
+\end{equation}\]</span></p>
+<p>For this example, we will let <span class="math inline">\(\beta=1\)</span> and <span class="math inline">\(Z=10\)</span>, so <span class="math inline">\(\beta \frac{Z+1}{Z-1} = \frac{11}{9}\)</span>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>β <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>Z <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>ρ_CD <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> <span class="bu">sum</span>((<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span> β <span class="op">*</span> (Z <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> (Z<span class="op">-</span><span class="dv">1</span>)))<span class="op">**</span>j </span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>                    <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(β <span class="op">*</span> (Z <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> (Z<span class="op">-</span><span class="dv">1</span>)))<span class="op">**</span>j</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, Z)))</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>Tplus_example <span class="op">=</span> [np.array([<span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span> β <span class="op">*</span> (Z <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> (Z<span class="op">-</span><span class="dv">1</span>)))])</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>                 <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(Z<span class="op">-</span><span class="dv">1</span>)]</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>Tneg_example <span class="op">=</span>  [np.array([<span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(β <span class="op">*</span> (Z <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> (Z<span class="op">-</span><span class="dv">1</span>)))])</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>                 <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(Z<span class="op">-</span><span class="dv">1</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>fastcore.test.is_close(fixation_rate(Tplus_example, Tneg_example), ρ_CD)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
+<p>Finally, it is useful to know how the fixation rate behaves when any elements of Tplus are zero (as the fixation rate divides by those elements). Even though the Fermi learning rule we use theoretically gives a number between 0 and 1 exclusive, in practise the number may underflow to a 0 if low enough. This will cause unexpected behaviour if we allow it in our alogorithm for computing the transition matrix.</p>
+<p>We can avoid this issue by using a slightly altered method for calculating the fixation rate, taking advantage of our choice to use the <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#fermi_learning"><code>fermi_learning</code></a> rule.</p>
+<p>In the above fixation rate calculations we used the <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#fermi_learning"><code>fermi_learning</code></a> function to calculate the probability of a player with strategy <span class="math inline">\(D\)</span> adopting strategy <span class="math inline">\(C\)</span> (and likewise for the probability of a player with <span class="math inline">\(C\)</span> adopting <span class="math inline">\(D\)</span>). Their ratio takes the form, <span class="math inline">\(\frac{1 + e^x}{1 + e^{-x}}\)</span>. It is not too hard to verify that <span class="math inline">\(\frac{1 + e^x}{1 + e^{-x}} = e^x\)</span>.</p>
+<p>Moreover, we can avoid taking the product of the ratios at all, since the product of exponentials (with the same base) is just the exponential of the sum of their exponents.</p>
+<p>By using the above substitution and algebraic manipulation, we can substantially mitigate the numerical stability issues. For this reason, we will not use <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#fermi_learning"><code>fermi_learning</code></a> nor <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#fixation_rate"><code>fixation_rate</code></a> in our algorithm at all (although in most cases we would expect these methods to yield the same answers). Instead, we will use <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#fixation_rate_stable"><code>fixation_rate_stable</code></a>.</p>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/methods.py#L55" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+</section>
+<section id="fixation_rate_stable" class="level3">
+<h3 class="anchored" data-anchor-id="fixation_rate_stable">fixation_rate_stable</h3>
+<blockquote class="blockquote">
+<pre><code> fixation_rate_stable (ΠA:list, ΠB:list, β:gh_pages_example.types.Array1D)</code></pre>
+</blockquote>
+<p>Calculate the likelihood that a mutant B invades population A using a numerically stable method.</p>
+<table class="table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ΠA</td>
+<td>list</td>
+<td>Average payoffs for the strategy A they consider adopting for each number of mutants following A</td>
+</tr>
+<tr class="even">
+<td>ΠB</td>
+<td>list</td>
+<td>Average payoffs for the strategy B that the player currently follows for each number of mutants following A</td>
+</tr>
+<tr class="odd">
+<td>β</td>
+<td>Array1D</td>
+<td>learning rate</td>
+</tr>
+</tbody>
+</table>
+<p>We can see in the examples which follow that both methods usually give the same answers.</p>
+<p>To match an earlier example where <code>Tplus</code> and <code>Tneg</code> were both equal to <span class="math inline">\(\frac{1}{8}\)</span> (as <span class="math inline">\(Z=2\)</span> we only need to consider one value for each when <span class="math inline">\(k=1\)</span>), we let <span class="math inline">\(\beta=1\)</span> and recall that $T^+_B(k) = Pr(adopt , B | k) = $</p>
+<p>We can then say that <span class="math inline">\(ΠA - ΠB = \log{(\frac{1}{\frac{4}{8}} - 1)} = \log{\frac{4}{4}} = \log{4} - \log{4}\)</span></p>
+<p>Notice that to achieve netural drift, the payoffs have to be equal.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>Z <span class="op">=</span> <span class="dv">2</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>β <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>ΠA <span class="op">=</span> [np.array([np.log(<span class="dv">4</span>)])]</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>ΠB <span class="op">=</span> [np.array([np.log(<span class="dv">4</span>)])]</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> fixation_rate_stable(ΠA, ΠB, β)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>fastcore.test.test_close(result, <span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can also consider an example from a payoff matrix I’ve run into in practise.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>payoffs <span class="op">=</span> np.array([[<span class="dv">51</span>, <span class="fl">0.6</span>, <span class="dv">51</span>],</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>                    [<span class="fl">114.3</span>, <span class="fl">57.75</span>, <span class="fl">39.38</span>],</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                    [<span class="dv">51</span>, <span class="fl">0.99798</span>, <span class="dv">51</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We are interested in the fixation rate of a mutant B in a population of A</p>
+<p>Strategy A is the strategy represented by row 3</p>
+<p>Strategy B is the strategy represented by row 2</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>Z <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>β <span class="op">=</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We need only the average payoffs for the stable calculation.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>ΠA <span class="op">=</span> [k<span class="op">/</span>(Z<span class="op">-</span><span class="dv">1</span>) <span class="op">*</span> payoffs[<span class="dv">2</span>,<span class="dv">1</span>] <span class="op">+</span> (Z<span class="op">-</span>k<span class="op">-</span><span class="dv">1</span>)<span class="op">/</span>(Z<span class="op">-</span><span class="dv">1</span>) <span class="op">*</span> payoffs[<span class="dv">2</span>,<span class="dv">2</span>]</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, Z)]</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>ΠB <span class="op">=</span> [(k<span class="op">-</span><span class="dv">1</span>)<span class="op">/</span>(Z<span class="op">-</span><span class="dv">1</span>) <span class="op">*</span> payoffs[<span class="dv">1</span>,<span class="dv">1</span>] <span class="op">+</span> (Z<span class="op">-</span>k)<span class="op">/</span>(Z<span class="op">-</span><span class="dv">1</span>) <span class="op">*</span> payoffs[<span class="dv">1</span>,<span class="dv">2</span>]</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, Z)]</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>result_stable <span class="op">=</span> fixation_rate_stable(ΠA, ΠB, β)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We also need the adoption rates for the unstable calculation</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>Tneg <span class="op">=</span> [fermi_learning(ΠB[k<span class="op">-</span><span class="dv">1</span>], ΠA[k<span class="op">-</span><span class="dv">1</span>], β)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>                     <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, Z)]</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>Tplus <span class="op">=</span> [fermi_learning(ΠA[k<span class="op">-</span><span class="dv">1</span>], ΠB[k<span class="op">-</span><span class="dv">1</span>], β)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>         <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, Z)]</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Naiive and unstable calculation</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>result_unstable <span class="op">=</span> fixation_rate(Tplus, Tneg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>fastcore.test.test_close(result_stable, <span class="dv">0</span>)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>fastcore.test.test_close(result_unstable, <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="build-transition-matrix" class="level3">
+<h3 class="anchored" data-anchor-id="build-transition-matrix">Build transition matrix</h3>
+<p>Recall that step 1 of finding the solution to the Evolutionary Game dynamics is to build a transition matrix between all monomorphic states.</p>
+<p>The transition matrix captures the probability that if the population of the Evolutionary Game transitions to another state. We read an entry of the transition matrix as saying the probability of transitioning from the row state to column state.</p>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/methods.py#L76" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="modeltypeegt" class="level3">
+<h3 class="anchored" data-anchor-id="modeltypeegt">ModelTypeEGT</h3>
+<blockquote class="blockquote">
+<pre><code> ModelTypeEGT (Z:int, strategy_set:list[str],
+               β:gh_pages_example.types.Array1D,
+               payoffs:gh_pages_example.types.Array3D,
+               transition_matrix:gh_pages_example.types.Array3D=None,
+               ergodic:gh_pages_example.types.Array2D=None)</code></pre>
+</blockquote>
+<p>This is the schema for an Evolutionary Game Theory model.</p>
+<p>Note: This schema is not enforced and is here purely for documentation purposes.</p>
+<table class="table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Z</td>
+<td>int</td>
+<td></td>
+<td>the size of the population</td>
+</tr>
+<tr class="even">
+<td>strategy_set</td>
+<td>list</td>
+<td></td>
+<td>the set of strategies in the model</td>
+</tr>
+<tr class="odd">
+<td>β</td>
+<td>Array1D</td>
+<td></td>
+<td>the learning rate</td>
+</tr>
+<tr class="even">
+<td>payoffs</td>
+<td>Array3D</td>
+<td></td>
+<td>the payoffs of the game</td>
+</tr>
+<tr class="odd">
+<td>transition_matrix</td>
+<td>Array3D</td>
+<td>None</td>
+<td>the model’s transition matrix</td>
+</tr>
+<tr class="even">
+<td>ergodic</td>
+<td>Array2D</td>
+<td>None</td>
+<td>ergodic distribution of the model’s markov chain</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/methods.py#L1223" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="build_transition_matrix" class="level3">
+<h3 class="anchored" data-anchor-id="build_transition_matrix">build_transition_matrix</h3>
+<blockquote class="blockquote">
+<pre><code> build_transition_matrix (models:dict)</code></pre>
+</blockquote>
+<p>Build a transition matrix between all monomorphic states using the fermi social learning rule.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>models</td>
+<td>dict</td>
+<td>A dictionary that contains the parameters in <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#modeltypeegt"><code>ModelTypeEGT</code></a></td>
+</tr>
+</tbody>
+</table>
+<section id="examples-and-tests-2" class="level4">
+<h4 class="anchored" data-anchor-id="examples-and-tests-2">Examples and Tests</h4>
+<p>Consider the following two examples.</p>
+<p><strong>Example 1</strong></p>
+<p>Let all payoffs be equal in the game’s payoff matrix. All expected payoffs will be equal too.</p>
+<p>So, Fermi learning will say that each individual has a 50% chance of adopting the behaviour of the one they observe.</p>
+<p>We therefore have an equal chance during each epoch of gaining or losing an individual of the given type, in this example we denote the type as <span class="math inline">\(s \in \{A, B\}\)</span>, although this probability depends on population size <span class="math inline">\(Z\)</span> and the current number of individuals of that type, <span class="math inline">\(k\)</span>, <span class="math inline">\(T^+_s(k) = T^-_s(k) = \frac{Z-k}{Z} \frac{k}{Z} \frac{1}{2}\)</span>.</p>
+<p>Recall that we calculate the fixation rate, <span class="math inline">\(\rho\)</span> as follows: <span class="math display">\[\begin{equation}
+\rho = \frac{1}{1 + \sum_{j=1}^{N-1}{\prod_{k=1}^{j} \frac{b_k}{a_k}}}
+\end{equation}\]</span> where <span class="math inline">\(N=Z\)</span>, <span class="math inline">\(b_k = T^-_s(k)\)</span> and <span class="math inline">\(a_k = T^+_s(k)\)</span></p>
+<p>In this example, for each strategy <span class="math inline">\(s\)</span>, <span class="math inline">\(T^-_s(k) = T^+_s(k), \, \forall k\)</span>, so <span class="math inline">\(\rho = \frac{1}{Z}\)</span>.</p>
+<p>We only have <span class="math inline">\(2\)</span> strategies, and <span class="math inline">\(Z=10\)</span>, so the final transition matrix will look like</p>
+<p><span class="math display">\[\begin{equation}
+M \, = \, \begin{pmatrix}
+1 - \frac{\rho}{2 - 1} &amp; \frac{\rho}{2 - 1} &amp;\\
+\frac{\rho}{2 - 1} &amp; 1 - \frac{\rho}{2 - 1}\\
+\end{pmatrix}
+= \begin{pmatrix}
+0.9 &amp; 0.1 &amp;\\
+0.1 &amp; 0.9\\
+\end{pmatrix}
+\end{equation}\]</span></p>
+<p>Note that the above example describes neutral drift, the idea that even if there is no advantage to be gained from any particular strategy, social learning can still result in the spread of that behaviour. Neutral drift also occurs if we set the Fermi learning rate <span class="math inline">\(\beta = 0\)</span>, no matter what payoff matrix describes the game.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>payoffs <span class="op">=</span> np.array([[[<span class="dv">2</span>, <span class="dv">2</span>],</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>                     [<span class="dv">2</span>, <span class="dv">2</span>]]</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                   ])</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>Z <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>β <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>models <span class="op">=</span> {<span class="st">"payoffs"</span>: payoffs,</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Z"</span>: Z,</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>          <span class="st">"β"</span>: β,</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>          <span class="st">"strategy_set"</span>: [<span class="st">"A"</span>, <span class="st">"B"</span>],</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>         }</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> build_transition_matrix(models)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>fastcore.test.test_close(result[<span class="st">'transition_matrix'</span>],</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>                         np.array([[<span class="fl">0.9</span>, <span class="fl">0.1</span>],</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>                                   [<span class="fl">0.1</span>, <span class="fl">0.9</span>]]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>Example 2</strong></p>
+<p>Let the payoff matrix be akin to a Prisoner’s Dilemma with two strategies, <span class="math inline">\(C\)</span> or <span class="math inline">\(D\)</span> (Cooperate or Defect respectively):</p>
+<span class="math display">\[\begin{pmatrix}
+2 &amp; 0\\
+3 &amp; 1\\
+\end{pmatrix}\]</span>
+<p>Again, for this simple example, the relative average success of strategy <span class="math inline">\(C\)</span> is independent of the number of <span class="math inline">\(C\)</span> players, <span class="math inline">\(k\)</span>. This is rarely the case in practise but permits a more legible example.</p>
+<p><span class="math inline">\(C\)</span>’s relative success over <span class="math inline">\(D\)</span> will be <span class="math inline">\(\frac{2 (k-1)}{Z-1} - \frac{3 k + (Z - k - 1)}{Z-1} = - \frac{Z + 1}{Z-1}\)</span>.</p>
+<p>Fermi learning means the probability of a <span class="math inline">\(D\)</span> player adopting what they see <span class="math inline">\(C\)</span> do is:</p>
+<p><span class="math display">\[\begin{equation}
+\frac{1}{1 + e^{- \beta (\Pi_C(k) - \Pi_D(k))}} = \frac{1}{1 + e^{\beta \frac{Z + 1}{Z-1}}}
+\end{equation}\]</span></p>
+<p>The fixation rate for mutant <span class="math inline">\(C\)</span> in a population of <span class="math inline">\(D\)</span> players, <span class="math inline">\(\rho_{DC}\)</span>, can be computed as</p>
+<p><span class="math display">\[\begin{equation}
+\rho_{DC} = \frac{1}{1 + \sum_{j=1}^{Z-1}{(\frac{1 + e^{\beta \frac{Z + 1}{Z-1}}}{1 + e^{-\beta \frac{Z + 1}{Z-1}}})^j}}
+\end{equation}\]</span></p>
+<p>Similarly, the fixation rate for mutant <span class="math inline">\(D\)</span> in a population of <span class="math inline">\(C\)</span> players, <span class="math inline">\(\rho_{CD}\)</span>, can be computed as</p>
+<p><span class="math display">\[\begin{equation}
+\rho_{CD} = \frac{1}{1 + \sum_{j=1}^{Z-1}{(\frac{1 + e^{-\beta \frac{Z + 1}{Z-1}}}{1 + e^{\beta \frac{Z + 1}{Z-1}}})^j}}
+\end{equation}\]</span></p>
+<p>For <span class="math inline">\(Z=10\)</span> and <span class="math inline">\(\beta = 1\)</span>, the above yields the following transition matrix,</p>
+<p><span class="math display">\[\begin{equation}
+M \, = \, \begin{pmatrix}
+1 - \frac{\rho_{CD}}{2 - 1} &amp; \frac{\rho_{CD}}{2 - 1} &amp;\\
+\frac{\rho_{DC}}{2 - 1} &amp; 1 - \frac{\rho_{DC}}{2 - 1}\\
+\end{pmatrix}
+\approx \begin{pmatrix}
+0.295 &amp; 0.705 &amp;\\
+0.000 &amp; 1.000\\
+\end{pmatrix}
+\end{equation}\]</span></p>
+<p>Note how in the above fixation rate calculations how we used the <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#fermi_learning"><code>fermi_learning</code></a> function to calculate the probability of a player with strategy <span class="math inline">\(D\)</span> adopting strategy <span class="math inline">\(C\)</span> (and likewise for the probability of a player with <span class="math inline">\(C\)</span> adopting <span class="math inline">\(D\)</span>). This function has special properties which aid us in calculating the fixation rate.</p>
+<p>Notice how the ratio of the two adoption rates takes the form, <span class="math inline">\(\frac{1 + e^x}{1 + e^{-x}}\)</span>. It is not too hard to verify that <span class="math inline">\(\frac{1 + e^x}{1 + e^{-x}} = e^x\)</span>.</p>
+<p>We utilities this property to considerably improve the numerical stability of our algorithm for building a transition matrix. For this reason, we do not use <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#fermi_learning"><code>fermi_learning</code></a> in our algorithm at all.</p>
+<p>We can similarly note that <span class="math inline">\(\frac{1}{1 + e^{-x}} = 1 - \frac{1}{1 + e^{x}}\)</span>, i.e.&nbsp;the two adoption rates are complementary probabilities.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>payoffs <span class="op">=</span> np.array([[[<span class="dv">2</span>, <span class="dv">0</span>],</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>                     [<span class="dv">3</span>, <span class="dv">1</span>]],</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>                   ])</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>Z <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>β <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>models <span class="op">=</span> {<span class="st">"payoffs"</span>: payoffs,</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Z"</span>: Z,</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>          <span class="st">"β"</span>: β,</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>          <span class="st">"strategy_set"</span>: [<span class="st">"C"</span>, <span class="st">"D"</span>],</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>         }</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> build_transition_matrix(models)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>ρ_CD <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> <span class="bu">sum</span>((<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span> β <span class="op">*</span> (Z <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> (Z<span class="op">-</span><span class="dv">1</span>)))<span class="op">**</span>j </span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>                    <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(β <span class="op">*</span> (Z <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> (Z<span class="op">-</span><span class="dv">1</span>)))<span class="op">**</span>j</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, Z)))</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>ρ_DC <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> <span class="bu">sum</span>((<span class="dv">1</span> <span class="op">+</span> np.exp(β <span class="op">*</span> (Z <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> (Z<span class="op">-</span><span class="dv">1</span>)))<span class="op">**</span>j</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>                    <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span> β <span class="op">*</span> (Z <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> (Z<span class="op">-</span><span class="dv">1</span>)))<span class="op">**</span>j </span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, Z)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>ρ_CD_alt <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> <span class="bu">sum</span>(np.exp(<span class="op">-</span> j <span class="op">*</span> β <span class="op">*</span> (Z <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> (Z<span class="op">-</span><span class="dv">1</span>))</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>                        <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, Z)))</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>ρ_DC_alt <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> <span class="bu">sum</span>(np.exp(j <span class="op">*</span> β <span class="op">*</span> (Z <span class="op">+</span> <span class="dv">1</span>) <span class="op">/</span> (Z<span class="op">-</span><span class="dv">1</span>))</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>                        <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, Z)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>fastcore.test.test_close(ρ_CD, ρ_CD_alt)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>fastcore.test.test_close(ρ_DC, ρ_DC_alt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>fastcore.test.test_close(result[<span class="st">'transition_matrix'</span>],</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>                         np.array([[<span class="dv">1</span><span class="op">-</span> ρ_CD, ρ_CD],</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>                                   [ρ_DC, <span class="dv">1</span> <span class="op">-</span> ρ_DC]]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="example-3" class="level4">
+<h4 class="anchored" data-anchor-id="example-3">Example 3</h4>
+<p>Here is an additional example for the 3 by 3 matrix we discussed when testing other functions.</p>
+<p>This time, we make sure we get the correct probabilities for each transition.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>payoffs <span class="op">=</span> np.array([[[<span class="dv">51</span>, <span class="fl">0.6</span>, <span class="dv">51</span>],</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>                     [<span class="fl">114.3</span>, <span class="fl">57.75</span>, <span class="fl">39.38</span>],</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>                     [<span class="dv">51</span>, <span class="fl">0.99798</span>, <span class="dv">51</span>]],</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>                   ])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>expected <span class="op">=</span> np.array([[[<span class="fl">0.495</span>, <span class="fl">0.5</span>, <span class="fl">0.005</span>],</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>                     [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>],</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>                     [<span class="fl">0.005</span>, <span class="dv">0</span>, <span class="fl">0.995</span>]],</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>                   ])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>Z <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>β <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>models <span class="op">=</span> {<span class="st">"payoffs"</span>: payoffs,</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Z"</span>: Z,</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>          <span class="st">"β"</span>: β,</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>          <span class="st">"strategy_set"</span>: [<span class="st">"AS"</span>, <span class="st">"AU"</span>, <span class="st">"PS"</span>],</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>         }</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> build_transition_matrix(models)</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>fastcore.test.test_close(result[<span class="st">'transition_matrix'</span>], expected)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="find-ergodic-strategy-distribution" class="level3">
+<h3 class="anchored" data-anchor-id="find-ergodic-strategy-distribution">Find ergodic strategy distribution</h3>
+<p>Step 2 is to find the ergodic distribution for the Evolutionary Game using the transition matrix we constructed in step 1.</p>
+<p>Let <span class="math inline">\(M\)</span> denote the transition matrix, and <span class="math inline">\(\omega_t\)</span> be the column vector describing the proportions with which each strategy is played in the population.</p>
+<p>We can describe the evolution of this system with <span class="math inline">\(\omega_{t+1} = M^T \omega_t\)</span>, i.e.&nbsp;the proportion of players that use a given strategy in the next round will be equal to the sum of the proportions of players for each strategy who adopted that strategy in the current round. Equivalently, we can also consider <span class="math inline">\(\omega_t\)</span> as describing the probabilities that the system at time t is in each of the monomorphic states.</p>
+<p>As each of the monomporphic states described in the transition matrix is reachable from any other with some probability and since the transition probabilities only depend on the current state, what we have is a markov chain which is irreducible.</p>
+<p>The ergodicity theorem guarantees that such irreducible and aperiodic markov chains have an ergodic distribution that the system converges to, no matter where it starts. An ergodic distribution (also called a stationary distribution), <span class="math inline">\(\omega^*\)</span> satisfies <span class="math inline">\(\omega^* = M^T \omega^*\)</span> <a href="https://gregorygundersen.com/blog/2019/10/28/ergodic-markov-chains/">[1]</a> <a href="http://www.stat.columbia.edu/~liam/teaching/neurostat-spr11/papers/mcmc/Ergodicity_Theorem.pdf">[2]</a> <a href="https://textbooks.math.gatech.edu/ila/1553/stochastic-matrices.html">[3]</a>.</p>
+<p>Our ergodic distribution, <span class="math inline">\(\omega^*\)</span>, is therefore defined as the normalised right-hand eigenvector with eigenvalue 1 of the transposed transition matrix, <span class="math inline">\(M^T\)</span> (or equivalently, if we defined <span class="math inline">\(\omega\)</span> as a row vector instead, <span class="math inline">\(\omega^*\)</span> would be the left-hand eigenvector with eigenvalue 1 of transition matrix, <span class="math inline">\(M\)</span>; numerical computing packages usually return the right-hand eigenvectors more directly, which is why I used the other formalism).</p>
+<p>We use standard linear algebra methods from the <a href="https://numpy.org/">numpy</a> package to find this eigenvector. These numerical methods will usually not return an eigenvector which is normalised to sum to 1, so we must normalise the eigenvector we are given. See their documentation to learn more about these numerical methods.</p>
+<section id="examples-and-tests-3" class="level4">
+<h4 class="anchored" data-anchor-id="examples-and-tests-3">Examples and Tests</h4>
+<p>Let our transition matrix, <span class="math inline">\(M\)</span> be</p>
+<p><span class="math display">\[\begin{equation}
+M = \begin{pmatrix}
+\frac{3}{4} &amp; \frac{1}{4} \\
+\frac{1}{4} &amp; \frac{3}{4} \\
+\end{pmatrix}
+\end{equation}\]</span></p>
+<p>Note that <span class="math inline">\(M^T\)</span> is a stochastic matrix because each column of the transposed matrix would sum to <span class="math inline">\(1\)</span> (in general the rows of the transposed matrix are unlikely to sum to 1, but choosing an example like the above makes it easy to compute the eigenvectors).</p>
+<p>It’s not too hard to verify that the characteristic polynomial of <span class="math inline">\(M^T\)</span> can be factored into <span class="math inline">\((\lambda - 1)(\lambda - \frac{1}{2})\)</span>, so we have two eigenvalues, <span class="math inline">\(1\)</span> and <span class="math inline">\(\frac{1}{2}\)</span>.</p>
+<p>It’s not too hard to verify that column vector <span class="math inline">\([1, 1]\)</span> is the eigenvector of <span class="math inline">\(M^T\)</span> with eigenvalue <span class="math inline">\(1\)</span> .</p>
+<p>Now that we know the weights placed on each strategy, we can compute the strategy distribution by normalising our eigenvector.</p>
+<p>The ergodic distribution i <span class="math inline">\(\omega^* = [\frac{1}{2}, \frac{1}{2}]\)</span>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> np.array([[[<span class="dv">3</span><span class="op">/</span><span class="dv">4</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">4</span>],</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>               [<span class="dv">1</span><span class="op">/</span><span class="dv">4</span>, <span class="dv">3</span><span class="op">/</span><span class="dv">4</span>]],</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>             ])</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>models <span class="op">=</span> {<span class="st">"transition_matrix"</span>: M}</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> find_ergodic_distribution(models)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>fastcore.test.test_eq(result[<span class="st">'ergodic'</span>],</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>                      np.array([[<span class="dv">1</span><span class="op">/</span><span class="dv">2</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">2</span>]]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># #| hide</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="co"># # Here is some code which illustrates how one could use sympy to find the relevant eigenvectors </span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="co"># # using symbolic methods (but please note that even sympy must resort to numerical methods if</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a><span class="co"># # the matrices are bigger than 5 by 5 in size, due to the fundamental lack of exact solutions to </span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="co"># # polynomial equations with order greater than 5)</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a><span class="co"># import sympy</span></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a><span class="co"># for m in M:</span></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a><span class="co">#     # Sympy needs integers or expressions to work</span></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a><span class="co">#     # Integers is usually safer</span></span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a><span class="co">#     m = np.array(1000 * m, dtype=int)</span></span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a><span class="co">#     M_symbolic = sympy.Matrix(m)</span></span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a><span class="co">#     for result in M_symbolic.eigenvects():</span></span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a><span class="co">#         lamda, multiplicity, evs = result</span></span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a><span class="co">#         # print("lambda: " , lamda,</span></span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a><span class="co">#         #           "multiplicity: ", multiplicity,</span></span>
+<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a><span class="co">#         #           "eigenvectors: ", evs)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Here is another quick illustrative example.</p>
+<p>Let our transition matrix, <span class="math inline">\(M\)</span> be</p>
+<p><span class="math display">\[\begin{equation}
+M = \begin{pmatrix}
+\frac{3}{4} &amp; \frac{1}{4} \\
+\frac{3}{4} &amp; \frac{1}{4} \\
+\end{pmatrix}
+\end{equation}\]</span></p>
+<p><span class="math inline">\(M^T\)</span> is a stochastic matrix. It is easy to verify that <span class="math inline">\([\frac{3}{4}, \frac{1}{4}]\)</span> is the normalised eigenvector with eigenvalue 1.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> np.array([[[<span class="dv">3</span><span class="op">/</span><span class="dv">4</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">4</span>],</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>               [<span class="dv">3</span><span class="op">/</span><span class="dv">4</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">4</span>]],</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>             ])</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>models <span class="op">=</span> {<span class="st">"transition_matrix"</span>: M}</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> find_ergodic_distribution(models)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>fastcore.test.test_eq(result[<span class="st">'ergodic'</span>],</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>                      np.array([[<span class="dv">3</span><span class="op">/</span><span class="dv">4</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">4</span>]]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/methods.py#L166" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+</section>
+<section id="find_ergodic_distribution" class="level3">
+<h3 class="anchored" data-anchor-id="find_ergodic_distribution">find_ergodic_distribution</h3>
+<blockquote class="blockquote">
+<pre><code> find_ergodic_distribution (models:dict)</code></pre>
+</blockquote>
+<p>Find the ergodic distribution of a markov chain with the given transition matrix.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>models</td>
+<td>dict</td>
+<td>A dictionary that contains the parameters in <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#modeltypeegt"><code>ModelTypeEGT</code></a></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="run-full-markov-chain-algorithm" class="level3">
+<h3 class="anchored" data-anchor-id="run-full-markov-chain-algorithm">Run full markov chain algorithm</h3>
+<p>Finally, here is a helper function to both build the transition matrix for the model and find its ergodic distribution.</p>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/methods.py#L185" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="markov_chain" class="level3">
+<h3 class="anchored" data-anchor-id="markov_chain">markov_chain</h3>
+<blockquote class="blockquote">
+<pre><code> markov_chain (models:dict)</code></pre>
+</blockquote>
+<p>Find the ergodic distribution of the evolutionary game given by each model in models.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>models</td>
+<td>dict</td>
+<td>A dictionary that contains the parameters in <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#modeltypeegt"><code>ModelTypeEGT</code></a></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="multiple-populations" class="level2">
+<h2 class="anchored" data-anchor-id="multiple-populations">Multiple Populations</h2>
+<section id="building-blocks" class="level3">
+<h3 class="anchored" data-anchor-id="building-blocks">Building blocks</h3>
+<p>I will now describe the building blocks for an algorithm for building the transition matrix for a evolutionary game with multiple populations.</p>
+<p>When we have multiple populations, it is very easy to have many possible transitions. For this reason, it is important that we have a way to programatically handle them.</p>
+<p>My algorithm allows one to build these transition matrices using only the following information (in addition to other parameters needed in the single population case): - (i) Payoffs - (ii) Each sector’s strategies - (iii) Allowed sectors for each player - (iv) Sampling rule (optional) - (v) profile filters (optional)</p>
+<ol start="3" type="i">
+<li>in particular allows for a great deal of flexibility in setting up a game. It is possible to capture games where the number of players may vary or where the interaction contains players who may be sampled from one of several poulations. This flexibility will allow us to study a wide range of models from the literature. By default, (iv) and (v) are already quite general, though one can provide their own sampling rules and profile filters should they want even greater flexibility.</li>
+</ol>
+<section id="payoffs" class="level4">
+<h4 class="anchored" data-anchor-id="payoffs">Payoffs</h4>
+<p><code>payoffs</code> is a nested dictionary which is 2 levels deep. On the first level, each key is a string of the form “…n3-n2-n1”. n1 is an integer which encodes the strategy that player 1 uses in the interaction. n2 and n3 are the same. We have as many integers as there are possible players in the interaction. This key therefore captures the strategy profile employed by the players.</p>
+<p>At the second level, we have keys for each player, “P1”, “P2”, “P3”, …</p>
+<p>Each value is a 1D numpy array containing the player’s payoffs (relevant to the specified strategy profile) for each model we are solving the game for.</p>
+<p>There are number of important hints to follow when writing your payoffs for use in my multiple populations algorithm. - Players are allowed to be from any sector. Note that I assume strategies are coded for each sector in order. So, Sector 1’s strategies are coded from 1 to num_s1_strategies, Sector 2’s are coded from num_s1_strategies + 1 to num_s1_strategies + num_s2 strategies, and so on. In this way the strategy code tells us which sector the strategy is from and which strategy they follow. - I use a 0 to indicate that the player is not involved in the current interaction. Intuitively you may prefer to think of the player as doing nothing and being from Sector 0. This allows us to flexibly allow the possibility of an uncertain number of players in each interaction. - In some games, it is possible that there are a large number of possible strategy profiles (e.g.&nbsp;a game with 3 sectors, 3 strategies, and up to 4 players in each interaction would have 10**4 possible strategy profiles). However, very few of those strategy profiles will be relevant to building the transition matrix, especially if the order of the players does not matter, and if some players must belong to certain sectors. The number of strategy profiles will often be much smaller than the number of parameter combinations (what I refer to as models) we wish to solve for.</p>
+</section>
+<section id="sector-strategies" class="level4">
+<h4 class="anchored" data-anchor-id="sector-strategies">Sector strategies</h4>
+<p>A dictionary with keys for each sector and values as lists of integers which encode the sector’s strategies. Recall that sector 1’s strategies start from 1, sector 2’s strategies start from num_s1_strategies + 1 and so on.</p>
+<p>We will use the sector strategies to generate the set of recurrent states, the states that the system visits in the limit of rare mutations. Such states have every member of a sector (also often reffered to as a population) using the same strategy, i.e.&nbsp;they are monomorphic. These are the states we need to the build the transition matrix for.</p>
+</section>
+<section id="allowed_sectors" class="level4">
+<h4 class="anchored" data-anchor-id="allowed_sectors">Allowed_sectors</h4>
+<p><code>allowed_sectors</code> specifies which sectors each player can be from and therefore specifies all possible interactions in the game.</p>
+<p>It is a dictionary where the keys are players, e.g.&nbsp;“P1” and the values are lists of sectors, e.g.&nbsp;[“S1”, “S2”]. This tells the algorithm which interactions are possible in the game.</p>
+<p>To specify that the player may not be present in an interaction, you can specify “S0” in the list.</p>
+<p>Note: <code>sectors</code> are perhaps more commonly reffered to as <code>populations</code> or <code>subpopulations</code> in the literature. For the sake of brevity, I use <code>sectors</code> instead when naming variables.</p>
+</section>
+<section id="sampling-rule" class="level4">
+<h4 class="anchored" data-anchor-id="sampling-rule">Sampling rule</h4>
+<p>A sampling rule tells us the likelihood that a strategy profile will be selected given the current state of the system and the number of mutants (of the specified type). The sampling also needs to know which player represents the agent who is comparing the two strategies under consideration as this player does not need to be sampled.</p>
+<p>However, if this agent could have been one of several players (they would be playing the same strategy in the strategy profile), then the sampling rule should also multiply the likelihood by the probability that the agent would have been chosen as the current player.</p>
+<hr>
+</section>
+</section>
+<section id="multi.._inner" class="level3">
+<h3 class="anchored" data-anchor-id="multi.._inner">multi.<locals>._inner</locals></h3>
+<blockquote class="blockquote">
+<pre><code> multi.&lt;locals&gt;._inner (*args, **kwargs)</code></pre>
+</blockquote>
+<hr>
+</section>
+<section id="multi.._inner-1" class="level3">
+<h3 class="anchored" data-anchor-id="multi.._inner-1">multi.<locals>._inner</locals></h3>
+<blockquote class="blockquote">
+<pre><code> multi.&lt;locals&gt;._inner (*args, **kwargs)</code></pre>
+</blockquote>
+<section id="tests-for-sample_profile" class="level5">
+<h5 class="anchored" data-anchor-id="tests-for-sample_profile">Tests for <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#sample_profile"><code>sample_profile</code></a></h5>
+<p>The <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#sample_profile"><code>sample_profile</code></a> default method is very general. It will calculate the likelihood of the profile by assuming that all allowed sectors for each player are uniformly sampled from (unless sector weights are provided) and consider the likelihood of sampling a mutant from the sector which has a mutant.</p>
+</section>
+<section id="test-1" class="level5">
+<h5 class="anchored" data-anchor-id="test-1">Test 1</h5>
+<p>I conduct a number of tests below on a simple game where every player in an interaction is fixed to a particular sector. In such games, the likelihood of each profile being chosen is is always 1, no matter how many mutants there are, as no individual plays against a player from the same sector.</p>
+</section>
+<section id="test-2" class="level5">
+<h5 class="anchored" data-anchor-id="test-2">Test 2</h5>
+<p>There are several errors a user may encounter if they give invalid values.</p>
+</section>
+<section id="test-3" class="level5">
+<h5 class="anchored" data-anchor-id="test-3">Test 3</h5>
+<p>Now, consider a more complicated example where we have 2 players that belong to the same sector and one player who is fixed to another sector. Now the profile likelihoods depend on the number of mutants.</p>
+</section>
+<section id="test-4" class="level5">
+<h5 class="anchored" data-anchor-id="test-4">Test 4</h5>
+<p>I also test it for a game where all 3 players can be from the same two sectors.</p>
+</section>
+</section>
+<section id="profile-filters" class="level3">
+<h3 class="anchored" data-anchor-id="profile-filters">Profile filters</h3>
+<p>Profile filters work by filtering a list of profiles for only those profiles which meet the required conditions. Se <a href="https://PaoloBova.github.io/gh-pages-example/model_utils.html#create_profiles"><code>create_profiles</code></a> to read up how we create a list of profiles, and <a href="https://PaoloBova.github.io/gh-pages-example/model_utils.html#profile_filter"><code>profile_filter</code></a> for different profile filters.</p>
+<p>We can also use the <a href="https://PaoloBova.github.io/gh-pages-example/model_utils.html#apply_profile_filters"><code>apply_profile_filters</code></a> function which by default filters our profiles so that we only keep those profiles which are relevant to the transition and are consistent with the given <code>allowed_sectors</code>.</p>
+</section>
+<section id="create-all-recurrent-states" class="level3">
+<h3 class="anchored" data-anchor-id="create-all-recurrent-states">Create all recurrent states</h3>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/methods.py#L583" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="create_recurrent_states" class="level3">
+<h3 class="anchored" data-anchor-id="create_recurrent_states">create_recurrent_states</h3>
+<blockquote class="blockquote">
+<pre><code> create_recurrent_states (models)</code></pre>
+</blockquote>
+<p>Create all recurrent-states for the set of models.</p>
+<p>Here is a quick test for <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#create_recurrent_states"><code>create_recurrent_states</code></a></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> create_recurrent_states({<span class="st">"sector_strategies"</span>: {<span class="st">"S1"</span>: [<span class="dv">1</span>, <span class="dv">2</span>],</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>                                                        <span class="st">"S2"</span>: [<span class="dv">3</span>, <span class="dv">4</span>],</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>                                                        <span class="st">"S3"</span>: [<span class="dv">5</span>, <span class="dv">6</span>]}})</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>expected <span class="op">=</span> [<span class="st">'5-3-1'</span>,</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>            <span class="st">'5-3-2'</span>,</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>            <span class="st">'5-4-1'</span>,</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>            <span class="st">'5-4-2'</span>,</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>            <span class="st">'6-3-1'</span>,</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>            <span class="st">'6-3-2'</span>,</span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>            <span class="st">'6-4-1'</span>,</span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>            <span class="st">'6-4-2'</span>]</span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>fastcore.test.test_eq(result, expected)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="check-transition-is-valid" class="level3">
+<h3 class="anchored" data-anchor-id="check-transition-is-valid">Check transition is valid</h3>
+<p>Here is a method for checking that a given transition is valid.</p>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/methods.py#L596" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="valid_transition" class="level3">
+<h3 class="anchored" data-anchor-id="valid_transition">valid_transition</h3>
+<blockquote class="blockquote">
+<pre><code> valid_transition (ind1:str, ind2:str)</code></pre>
+</blockquote>
+<p>Check if the transition from ind1-&gt;ind2 is valid i.e.&nbsp;that only one population undergoes a change in strategy.</p>
+<table class="table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ind1</td>
+<td>str</td>
+<td>The index of the current state, expressed in the form “{strategy_code}-{strategy_code}-{strategy_code}”</td>
+</tr>
+<tr class="even">
+<td>ind2</td>
+<td>str</td>
+<td>The index of the next state, expressed in the same form as <code>ind1</code></td>
+</tr>
+<tr class="odd">
+<td><strong>Returns</strong></td>
+<td><strong>bool</strong></td>
+<td><strong>True if the transition is valid, false otherwise</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tests for <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#valid_transition"><code>valid_transition</code></a></strong></p>
+</section>
+<section id="a-multimethod-for-computing-the-likelihoods-of-different-strategy-profiles" class="level3">
+<h3 class="anchored" data-anchor-id="a-multimethod-for-computing-the-likelihoods-of-different-strategy-profiles">A multimethod for computing the likelihoods of different strategy profiles</h3>
+<hr>
+</section>
+<section id="multi.._inner-2" class="level3">
+<h3 class="anchored" data-anchor-id="multi.._inner-2">multi.<locals>._inner</locals></h3>
+<blockquote class="blockquote">
+<pre><code> multi.&lt;locals&gt;._inner (*args, **kwargs)</code></pre>
+</blockquote>
+<hr>
+</section>
+<section id="multi.._inner-3" class="level3">
+<h3 class="anchored" data-anchor-id="multi.._inner-3">multi.<locals>._inner</locals></h3>
+<blockquote class="blockquote">
+<pre><code> multi.&lt;locals&gt;._inner (*args, **kwargs)</code></pre>
+</blockquote>
+<hr>
+</section>
+<section id="multi.._inner-4" class="level3">
+<h3 class="anchored" data-anchor-id="multi.._inner-4">multi.<locals>._inner</locals></h3>
+<blockquote class="blockquote">
+<pre><code> multi.&lt;locals&gt;._inner (*args, **kwargs)</code></pre>
+</blockquote>
+<section id="tests-for-compute_profile_dist" class="level4">
+<h4 class="anchored" data-anchor-id="tests-for-compute_profile_dist">Tests for <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#compute_profile_dist"><code>compute_profile_dist</code></a></h4>
+<section id="test-1-1" class="level5">
+<h5 class="anchored" data-anchor-id="test-1-1">Test 1</h5>
+<p>I consider a model with 2 sectors, who each have 2 strategies and 10 members, and play a game with 2 players who can each be from either sector.</p>
+<p>We therefore specify the sectors sizes, <code>Z</code>, the <code>sector_strategies</code> and the <code>allowed_sectors</code></p>
+<p><code>profiles_filtered</code> will be all profiles in such a game relevant to a transition between Sector 1 playing their first strategy and Sector 1 playing their second strategy. The members of Sector 2 play their first strategy.</p>
+<p>I encode these recurrent states as “3-1” and “3-2” respectively.</p>
+<p>I also mark “S1” as the <code>affected_sector</code>, as well as the <code>mutant_strategy</code> and <code>current_strategy</code>.</p>
+<p><code>profiles_filtered</code> then includes: all possible “x-y” where x,y in {1,2,3}, since there will be no “S2” players playing strategy 4.</p>
+<p>We also have to specify the <code>chosen_strategy</code> to indicate whether we are interested in the profile likelihoods from the perspective of a mutant player or a current player.</p>
+<p>The tests consider different values of <code>n_mutants</code>.</p>
+</section>
+<section id="test-2-1" class="level5">
+<h5 class="anchored" data-anchor-id="test-2-1">Test 2</h5>
+<p>I next consider the same model but this time each interaction has 5 players.</p>
+<p>In such cases, it is desirable to use the multiplayer-symmetric method for computing the likelihood of the relevant profiles.</p>
+<p>As before, we specify the sectors sizes, <code>Z</code>, the <code>sector_strategies</code> and the <code>allowed_sectors</code></p>
+<p><code>profiles_filtered</code> will be all profiles in such a game relevant to a transition between Sector 1 playing their first strategy and Sector 1 playing their second strategy. The members of Sector 2 play their first strategy.</p>
+<p>I encode these recurrent states as “3-1” and “3-2” respectively.</p>
+<p>I also mark “S1” as the <code>affected_sector</code>, as well as the <code>mutant_strategy</code> and <code>current_strategy</code>.</p>
+<p><code>profiles_filtered</code> then includes: all possible “x-y” where x,y in {1,2,3}, since there will be no “S2” players playing strategy 4.</p>
+<p>While we need all of these profiles for this new method, the profiles we only compute the likelihoods for a subset. There is only one relevant profile per unique strategy count. The profile chosen is the first such profile when iterating through <code>profiles_filtered</code> (care must be taken to ensure that the payoffs are computed in a similar way - we will have a method to ensure this).</p>
+<p>We also have to specify the <code>chosen_strategy</code> to indicate whether we are interested in the profile likelihoods from the perspective of a mutant player or a current player.</p>
+<p>The tests verifies that the result of this method is the same as if aggregated the likelihoods using the default method.</p>
+</section>
+</section>
+</section>
+<section id="a-multimethod-for-computing-each-strategys-success" class="level3">
+<h3 class="anchored" data-anchor-id="a-multimethod-for-computing-each-strategys-success">A multimethod for computing each strategy’s success</h3>
+<hr>
+</section>
+<section id="multi.._inner-5" class="level3">
+<h3 class="anchored" data-anchor-id="multi.._inner-5">multi.<locals>._inner</locals></h3>
+<blockquote class="blockquote">
+<pre><code> multi.&lt;locals&gt;._inner (*args, **kwargs)</code></pre>
+</blockquote>
+<hr>
+</section>
+<section id="multi.._inner-6" class="level3">
+<h3 class="anchored" data-anchor-id="multi.._inner-6">multi.<locals>._inner</locals></h3>
+<blockquote class="blockquote">
+<pre><code> multi.&lt;locals&gt;._inner (*args, **kwargs)</code></pre>
+</blockquote>
+<section id="tests-for-compute_success" class="level4">
+<h4 class="anchored" data-anchor-id="tests-for-compute_success">Tests for <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#compute_success"><code>compute_success</code></a></h4>
+<section id="test-1-2" class="level5">
+<h5 class="anchored" data-anchor-id="test-1-2">Test 1</h5>
+<p>For simplicity, I assume payoffs are always 1. Naturally, the success of each strategy will also be 1.</p>
+<p>I consider a model with 2 sectors, who each have 2 strategies and 10 members, and play a game with 2 players who can each be from either sector.</p>
+<p>We therefore specify the sectors sizes, <code>Z</code>, the <code>sector_strategies</code> and the <code>allowed_sectors</code></p>
+<p><code>profiles_filtered</code> will be all profiles in such a game relevant to a transition between Sector 1 playing their first strategy and Sector 1 playing their second strategy. The members of Sector 2 play their first strategy.</p>
+<p>I encode these recurrent states as “3-1” and “3-2” respectively.</p>
+<p>I also mark “S1” as the <code>affected_sector</code>, as well as the <code>mutant_strategy</code> and <code>current_strategy</code>.</p>
+<p><code>profiles_filtered</code> then includes: all possible “x-y” where x,y in {1,2,3}, since there will be no “S2” players playing strategy 4.</p>
+<p>We also have to specify the <code>chosen_strategy</code> to indicate whether we are interested in the profile likelihoods from the perspective of a mutant player or a current player.</p>
+<p>The tests consider different values of <code>n_mutants</code>.</p>
+</section>
+<section id="test-2-2" class="level5">
+<h5 class="anchored" data-anchor-id="test-2-2">Test 2</h5>
+<p>I also consider more general payoffs where many entries are unique. However, the order of strategies does not matter.</p>
+<p>When the order does not matter, it is very easy to calulate an expression for what the success of each strategy should be for the 2 player interactions considered in this example.</p>
+</section>
+<section id="test-3-1" class="level5">
+<h5 class="anchored" data-anchor-id="test-3-1">Test 3</h5>
+<p>We can find a similar expression for when the order does matter.</p>
+</section>
+</section>
+</section>
+<section id="infer-number-of-models" class="level3">
+<h3 class="anchored" data-anchor-id="infer-number-of-models">Infer number of models</h3>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/methods.py#L1197" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="vals" class="level3">
+<h3 class="anchored" data-anchor-id="vals">vals</h3>
+<blockquote class="blockquote">
+<pre><code> vals (d:dict)</code></pre>
+</blockquote>
+<p>Return the values of a dictionary.</p>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/methods.py#L1202" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="infer_n_models" class="level3">
+<h3 class="anchored" data-anchor-id="infer_n_models">infer_n_models</h3>
+<blockquote class="blockquote">
+<pre><code> infer_n_models (models)</code></pre>
+</blockquote>
+<p>Infer the number of models from the model payoffs.</p>
+<section id="tests-for-infer_n_models" class="level4">
+<h4 class="anchored" data-anchor-id="tests-for-infer_n_models">Tests for <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#infer_n_models"><code>infer_n_models</code></a></h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>profiles_filtered <span class="op">=</span> [<span class="st">'1-1'</span>, <span class="st">'1-2'</span>, <span class="st">'1-3'</span>,</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>                     <span class="st">'2-1'</span>, <span class="st">'2-2'</span>, <span class="st">'2-3'</span>,</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>                     <span class="st">'3-1'</span>, <span class="st">'3-2'</span>, <span class="st">'3-3'</span>]</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>payoffs <span class="op">=</span> {}</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> profile <span class="kw">in</span> profiles_filtered:</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>  payoffs[profile] <span class="op">=</span> {}</span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> player <span class="kw">in</span> allowed_sectors.keys():</span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>    payoffs[profile][player] <span class="op">=</span> np.repeat(np.random.beta(<span class="dv">1</span>, <span class="dv">1</span>), <span class="dv">5</span>)</span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>infer_n_models({<span class="st">'payoffs'</span>: payoffs})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>5</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="an-algorithm-for-building-the-transition-matrix" class="level3">
+<h3 class="anchored" data-anchor-id="an-algorithm-for-building-the-transition-matrix">An algorithm for building the transition matrix</h3>
+<p>We now have the methods we need for building the transition matrix for a game with an arbitrary number of sectors and various interactions between those sectors.</p>
+<p>The algorithm goes as follows:</p>
+<p>For each possible transition - Check if the transition is valid - If self-transition, assign the value 1 - If not, skip - Filter profiles down to only those which are relevant - Compute average payoffs using the payoffs and those profiles - Compute the fixation rate - Compute transition probabilities</p>
+<div class="cell">
+<div class="cell-output cell-output-display">
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/methods.py#L1223" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="build_transition_matrix-1" class="level3">
+<h3 class="anchored" data-anchor-id="build_transition_matrix-1">build_transition_matrix</h3>
+<blockquote class="blockquote">
+<pre><code> build_transition_matrix (models:dict)</code></pre>
+</blockquote>
+<p>Build a transition matrix between all monomorphic states when there are multiple populations.</p>
+<table class="table table-sm table-striped">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>models</td>
+<td>dict</td>
+<td>A dictionary that contains the parameters in <code>ModelTypeEGTMultiple</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+</div>
+</div>
+<section id="tests-and-examples-for-build_transition_matrix-for-multiple-populations" class="level4">
+<h4 class="anchored" data-anchor-id="tests-and-examples-for-build_transition_matrix-for-multiple-populations">Tests and examples for <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#build_transition_matrix"><code>build_transition_matrix</code></a> for multiple populations</h4>
+<section id="test-1-3" class="level5">
+<h5 class="anchored" data-anchor-id="test-1-3">Test 1</h5>
+<p>I first consider a random payoff matrix and check that the resulting transition matrices have rows which sum to 1.</p>
+<p>As we are working with multiple populations, our <code>models</code> variable needs to declare this with the <code>dispatch-type</code> key.</p>
+</section>
+<section id="test-2-3" class="level5">
+<h5 class="anchored" data-anchor-id="test-2-3">Test 2</h5>
+<p>Here is an example of how to build a transition matrix when we have 2 sectors, playing 2 strategies each, and engage in 2 player interactions with players being from either sector.</p>
+<p>In the limit of small mutation rates, the system spends almost all its time in states where each population plays one strategy. Moreover, only a mutant for one population has the opportunity to fixate in that population. This means we only need to consider transitions where the strategy played by one population has changed. Transitions where both populations would have to change strategy occur with probability 0.</p>
+<p>In an earlier test, we showed that one could compute the success of each strategy in a pairwise contest analytically, even in the presence of other sectors with fixed populations.</p>
+<p>Once we have the successes for each <code>n_mutant</code> value, we can rely on our well-tested <a href="https://PaoloBova.github.io/gh-pages-example/methods.html#fixation_rate"><code>fixation_rate</code></a> function to help compute our expected transition probabilities.</p>
+</section>
+<section id="test-3-2" class="level5">
+<h5 class="anchored" data-anchor-id="test-3-2">Test 3</h5>
+<p>This example comes from a paper by Encarnacao et al.&nbsp;2016.</p>
+<p>They have a 3 sector model and report fixation probabilities for a particular scenario. Can we replicate it?</p>
+<hr>
+<p><a href="https://github.com/PaoloBova/gh-pages-example/blob/main/gh_pages_example/payoffs.py#L259" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+</section>
+</section>
+<section id="payoffs_encanacao_2016" class="level3">
+<h3 class="anchored" data-anchor-id="payoffs_encanacao_2016">payoffs_encanacao_2016</h3>
+<blockquote class="blockquote">
+<pre><code> payoffs_encanacao_2016 (models)</code></pre>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>models[<span class="st">'transition_matrix'</span>] <span class="op">*</span> <span class="dv">50</span> <span class="op">*</span> <span class="dv">2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>array([[[98.58484409,  0.43868208,  0.30980716,  0.        ,
+          0.66666667,  0.        ,  0.        ,  0.        ],
+        [ 0.96080835, 96.4805528 ,  0.        ,  0.73408493,
+          0.        ,  1.82455392,  0.        ,  0.        ],
+        [ 1.22164065,  0.        , 97.32807231,  0.96080835,
+          0.        ,  0.        ,  0.48947868,  0.        ],
+        [ 0.        ,  0.60342679,  0.43868208, 97.44630095,
+          0.        ,  0.        ,  0.        ,  1.51159018],
+        [ 0.66666667,  0.        ,  0.        ,  0.        ,
+         97.63844005,  0.96080835,  0.73408493,  0.        ],
+        [ 0.        ,  0.14274942,  0.        ,  0.        ,
+          0.43868208, 98.00649791,  0.        ,  1.41207058],
+        [ 0.        ,  0.        ,  0.88124961,  0.        ,
+          0.60342679,  0.        , 96.79725701,  1.71806658],
+        [ 0.        ,  0.        ,  0.        ,  0.21292021,
+          0.        ,  0.24196967,  0.1635232 , 99.38158692]]])</code></pre>
+</div>
+</div>
+<p>The ergodic distribution of states looks remarkably similar to the results reported in the paper.</p>
+<p>Unfortunately, there are no exact results available to compare against. However, the direction of change and relative sizes of the bars in the bar chat are very similar. The sum of the last 4 very closely matches the bar for total public cooperators which sits level to 0.8 on the chart.</p>
+</section>
+</section>
+<section id="references" class="level1">
+<h1>References</h1>
+<p>https://datagy.io/python-defaultdict/</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

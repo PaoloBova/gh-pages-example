@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss  xmlns:atom="http://www.w3.org/2005/Atom" 
+      xmlns:media="http://search.yahoo.com/mrss/" 
+      xmlns:content="http://purl.org/rss/1.0/modules/content/" 
+      xmlns:dc="http://purl.org/dc/elements/1.1/" 
+      version="2.0">
+<channel>
+<title>gh-pages-example</title>
+<link>https://PaoloBova.github.io/gh-pages-example/blog/index.html</link>
+<atom:link href="https://PaoloBova.github.io/gh-pages-example/blog/index.xml" rel="self" type="application/rss+xml"/>
+<description>A quick project to test setting up gh-pages</description>
+<generator>quarto-1.3.78</generator>
+<lastBuildDate>Tue, 01 Nov 2022 00:00:00 GMT</lastBuildDate>
+<item>
+  <title>Thoughts on: Recommendations for the AI RMF</title>
+  <dc:creator>Paolo Bova</dc:creator>
+  <link>https://PaoloBova.github.io/gh-pages-example/blog/Posts/2022-10-27-blog1/index.html</link>
+  <description><![CDATA[ 
+
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://PaoloBova.github.io/gh-pages-example/images/placeholder.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">Regulatory roadmap image</figcaption><p></p>
+</figure>
+</div>
+<section id="what-is-nists-ai-rmf" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-nists-ai-rmf">What is NIST’s AI RMF?</h2>
+<p>The US National Institute for Standards and Technology (NIST) is preparing an initial draft of their Risk Managament Framework for AI (the AI RMF). This is a non-binding set of standards that developers of AI are encouraged to follow. These standards aim to provided recommendations that companies can follow to minimise regulatory uncertainty, even if they operate across nations.</p>
+<p>Some questions which arise:</p>
+<ul>
+<li>Do organisations follow NIST recommendations? Which ones?</li>
+<li>If organisations do not follow NIST recommendations, are there any soft pressures to encourage them to reconsider?</li>
+<li>Is there precedence for NIST to accept recommendations from academic institutions into their guidance for industry, as the current paper hopes to achieve?</li>
+</ul>
+<p>In addition, the topic of regulating AI systems raises a number of questions which are important to address:</p>
+<ul>
+<li>Is it reasonable to expect that AI systems have a sufficiently high probability of being powerful enough to risk catastrophic outcomes on a relevant timeline?</li>
+<li>Are these risks more likely if there is competitive and geopolitical incentives to develop AI capabilities faster?</li>
+<li>What do other academics think?</li>
+<li>What do other policy makers think?</li>
+<li>Is there any reason to expect the EU AI Act and US regulation to coordinate?</li>
+</ul>
+</section>
+<section id="nbdev-in-industry" class="level2">
+<h2 class="anchored" data-anchor-id="nbdev-in-industry">nbdev in industry</h2>
+<p>We have piloted nbdev at several companies. We were delighted to receive the following feedback, which fits our own experience using and developing nbdev:</p>
+<div class="quarto-layout-panel">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell" style="flex-basis: 70.0%;justify-content: center;">
+<p><strong><a href="https://www.linkedin.com/in/david-j-berg/">David Berg</a>, on using nbdev for internal documentation at Netflix:</strong> “Prior to using nbdev, documentation was the most cumbersome aspect of our software development process… Using nbdev allows us to spend more time creating rich prose around the many code snippets guaranteeing the whole experience is robust. nbdev has turned what was once a chore into a natural extension of the notebook-based testing we were already doing.”</p>
+</div>
+</div>
+</div>
+<div class="quarto-layout-panel">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell" style="flex-basis: 70.0%;justify-content: center;">
+<p><strong><a href="https://news.ycombinator.com/item?id=25165306">Erik Gaasedelen</a>, on using nbdev in production at Lyft:</strong> “I use this in production at my company. It’s an awesome tool… nbdev streamlines everything so I can write docs, tests, and code all in one place… The packaging is also really well thought out. From my point of view it is close to a Pareto improvement over traditional Python library development.”</p>
+</div>
+</div>
+</div>
+<div class="quarto-layout-panel">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell" style="flex-basis: 70.0%;justify-content: center;">
+<p><strong><a href="https://twitter.com/hugobowne">Hugo Bowne-Anderson</a>, on using nbdev for <a href="https://outerbounds.com/docs">Outerbounds</a>:</strong> “nbdev has transformed the way we write documentation. Gone are the days of worrying about broken code examples when our API changes or [due to] human errors associated with copying &amp; pasting code into markdown files. The authoring experience of nbdev… [allows] us to write prose and live code in a unified interface, which allows more experimentation… On top of this, nbdev allows us to include unit tests in our documentation which mitigates the burden of maintaining the docs over time.”</p>
+</div>
+</div>
+</div>
+<div class="quarto-layout-panel">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell" style="flex-basis: 70.0%;justify-content: center;">
+<p><strong><a href="https://www.linkedin.com/in/roxanna-pourzand-445a3035/">Roxanna Pourzand</a>, on using nbdev for <a href="https://docs.transform.co/">Transform</a>:</strong> “We’re so excited about using nbdev. Our product is technical so our resulting documentation includes a lot of code-based examples. Before nbdev, we had no way of maintaining our code examples and ensuring that it was up-to-date for both command inputs and outputs. It was all manual. With nbdev, we now have this under control in a sustainable way. Since we’ve deployed these docs, we also had a situation where we were able to identify a bug in one of our interfaces, which we found by seeing the error that was output in the documentation.”</p>
+</div>
+</div>
+</div>
+</section>
+<section id="whats-nbdev" class="level2">
+<h2 class="anchored" data-anchor-id="whats-nbdev">What’s nbdev?</h2>
+<p>Nbdev embraces the dynamic nature of python and REPL-driven development in ways that traditional IDEs and software development workflows cannot. We thoroughly discussed the motivation, history, and goals of nbdev in this <a href="https://www.fast.ai/2019/12/02/nbdev/#software-development-tools">initial launch post</a> three years ago. The creator of Jupyter, Fernando Pérez, told us:</p>
+<blockquote class="blockquote">
+<p>[Nbdev] should be celebrated and used a lot more - I have kept a tab with your original nbdev blog post open for months in Chrome because of how often I refer to it and point others to this work</p>
+</blockquote>
+<p>In short, nbdev embraces ideas from <a href="https://en.wikipedia.org/wiki/Literate_programming">literate programming</a> and <a href="https://en.wikipedia.org/wiki/Exploratory_programming">exploratory programming</a>. These paradigms have been revisited in platforms like XCode <a href="https://en.wikipedia.org/wiki/Swift_Playgrounds">Playgrounds</a> and languages like Smalltalk, LISP, and Mathematica. With nbdev, we sought to push these paradigms even further by enabling it for one of the most popular dynamic programming languages in the world: Python.</p>
+<p>Even though nbdev is most widely used in scientific computing communities due to its integration with Jupyter Notebooks, we’ve found that nbdev is well suited for a much wider range of software. We have used nbdev to write <a href="https://github.com/fastai/fastai">deep learning libraries,</a> <a href="https://github.com/fastai/ghapi">API clients</a>, <a href="https://github.com/fastai/fastcore">python language extensions</a>,<a href="https://github.com/nat/ghtop">terminal user interfaces</a>, and more!</p>
+<p><em>Hamel: When I use nbdev, my colleagues are often astounded by how quickly I can create and distribute high-quality python packages. I consider nbdev to be a superpower that allows me to create tests and documentation without any additional friction, which makes all of my projects more maintainable. I also find writing software with nbdev to be more fun and productive as I can iterate very fast on ideas relative to more traditional software engineering workflows. Lastly, with nbdev I can also use traditional text-based IDEs if I want to, so I get the best of both worlds.</em></p>
+</section>
+<section id="what-we-learned-after-three-years-of-using-nbdev" class="level2">
+<h2 class="anchored" data-anchor-id="what-we-learned-after-three-years-of-using-nbdev">What we learned after three years of using nbdev</h2>
+<p>While nbdev was originally developed to simplify the software development workflow for various <a href="https://github.com/fastai">fast.ai projects</a>, we found that users wanted to extend nbdev to:</p>
+<ul>
+<li>Write and publish blog posts, books, papers, and other types of documents with Jupyter Notebooks</li>
+<li>Document existing codebases not written in nbdev</li>
+<li>Accommodate traditional Python conventions–for those constrained in how their code is organized and formatted</li>
+<li>Publish content using <em>any</em> static site generator</li>
+</ul>
+<p>While we created projects such as <a href="https://github.com/fastai/fastpages">fastpages</a> and <a href="https://github.com/fastai/fastdoc">fastdoc</a> to accomplish some of these tasks, we realized that it would be better to have a single set of flexible tools to accomplish all of them. To this end, we were extremely excited to discover <a href="https://quarto.org/">Quarto</a>, an open-source technical publishing system built on pandoc.</p>
+<p><em>Hamel: The more I used nbdev for creating Python modules, the more I wanted to use it for writing blogs and documenting existing codebases. The ability to customize the way notebooks are rendered (hiding vs.&nbsp;showing cells, stripping output, etc.), along with the facilities for including unit tests, made it my go-to authoring tool for all technical content. I’m excited that nbdev2 unlocks all of these possibilities for everyone!</em></p>
+<center>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/xxVVSxcjNQs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="">
+</iframe>
+</center>
+
+
+</section>
+
+ ]]></description>
+  <guid>https://PaoloBova.github.io/gh-pages-example/blog/Posts/2022-10-27-blog1/index.html</guid>
+  <pubDate>Tue, 01 Nov 2022 00:00:00 GMT</pubDate>
+  <media:content url="https://PaoloBova.github.io/gh-pages-example/images/placeholder.png" medium="image" type="image/png" height="108" width="144"/>
+</item>
+</channel>
+</rss>
