@@ -215,9 +215,9 @@ def sample_profile(models):
     allowed_sectors = models['allowed_sectors']
     profile = models['profile']
     chosen_player = models['chosen_player']
-    chosen_strategy = models['chosen_strategy']
-    current_strategy = models['current_strategy']
-    mutant_strategy = models['mutant_strategy']
+    chosen_strategy = int(models['chosen_strategy'])
+    current_strategy = int(models['current_strategy'])
+    mutant_strategy = int(models['mutant_strategy'])
     affected_sector = models['affected_sector']
     n_mutants = models['n_mutants']
     Z = models['Z']
@@ -251,6 +251,7 @@ def sample_profile(models):
     n_sampled_from_affected_sector = 1
     n_mutants_sampled = 1 if chosen_strategy == mutant_strategy else 0
     for i, strategy in enumerate(profile_tuple[::-1]):
+        strategy = int(strategy)  #coerce to integer
         valid_strategy = False
         for sector in allowed_sectors[f"P{i+1}"]:
             if strategy in sector_strategies[sector]:
