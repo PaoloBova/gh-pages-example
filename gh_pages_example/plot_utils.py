@@ -54,6 +54,8 @@ def plot_heatmap(table, # A pivot table, created using `pandas.pivot` function
                  cmap='inferno',
                  zmin=0,
                  zmax=1,
+                 zcenter=None,
+                 norm=None
                 ):
     """Plot heatmap using the index, columns, and values from `table`."""
     if figure_object==None:
@@ -62,6 +64,7 @@ def plot_heatmap(table, # A pivot table, created using `pandas.pivot` function
         heatmap, ax = figure_object
     im = ax.imshow(table.values,
                    cmap=cmap,
+                   norm=norm,
                    extent=[table.columns.min(),
                            table.columns.max(),
                            table.index.min(),

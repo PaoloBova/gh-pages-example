@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['threshold_society_prefers_safety_dsair', 'threshold_risk_dominant_safety_dsair',
-           'threshold_risk_dominant_safety_reg_market', 'threshold_ps_r_d_au']
+           'threshold_risk_dominant_safety_reg_market', 'threshold_ps_r_d_au', 'risk_dominance']
 
 # %% ../nbs/03_analytical_conditions.ipynb 2
 from nbdev.showdoc import *
@@ -103,3 +103,203 @@ def threshold_ps_r_d_au(models):
          )
     pr = np.maximum(0, 1 - p)
     return {**models, 'threshold_ps_risk_dominates_au': pr}
+
+# %% ../nbs/03_analytical_conditions.ipynb 15
+@multi
+def risk_dominance(models):
+    return models.get('risk_dominance_rule')
+
+@method(risk_dominance, "reg-market-v2-p_threshold")
+def risk_dominance(models):
+    names1 = ['b', 'c', 's', 'p', 'B', 'W']
+    names2 = ['pfo_l', 'pfo_h', 'λ', 'r_l', 'r_h', 'g']
+    b, c, s, p, B, W = [models[k] for k in names1]
+    pfo_l, pfo_h, λ, r_l, r_h, g = [models[k] for k in names2]
+    collective_risk = models.get('collective_risk', 0)
+    risk_shared = (1 - (1-p)*collective_risk)
+    mix = models.get('incentive_mix', 0)
+    
+    # We can influence the likelihood that the caught firm loses by a careful
+    # choice of phi_h and decisiveness.
+    
+    k = models.get('decisiveness', 100)
+    phi_h = models.get('phi_h', 1/s)
+    caught_loses_h = ((s * phi_h)**k + 1)**(-1)
+    
+    # The regulatory market payoffs when regulators are hq are as follows:
+    # Π_h11 = B / (2*W) + b/2 - c
+    # Π_h12 = ((1 - pfo_h) * b / (s+1) * risk_shared
+    #          + pfo_h * caught_loses_h * (b + B / W)
+    #          - c)
+    # Π_h21 = (p * (1 - pfo_h) * (s*b / (s + 1) + s * B / W)
+    #          + pfo_h * (1 - caught_loses_h) * B / W)
+    # Π_h22 = (p * (1 - pfo_h**2) * (b/2 + s*B/(2*W)) * risk_shared
+    #          + pfo_h**2 * B/(2*W))
+    
+    # l.h.s terms not scaled by p
+    term1 = B / (2*W) + b/2 - c
+    term2 = (1 - pfo_h) * b / (s+1)
+    term3 = term2 * -1 * collective_risk
+    term4 = pfo_h * caught_loses_h * (b + B / W) - c
+    
+    # l.h.s terms scaled by p
+    term5 = term2 * collective_risk
+    
+    # r.h.s terms not scaled by p
+    term6 = pfo_h * (1 - caught_loses_h) * B / W
+    term7 = pfo_h**2 * B/(2*W)
+    
+    # r.h.s terms scaled by p    
+    term8 = (1 - pfo_h) * (s*b / (s + 1) + s * B / W)
+    term9 = (1 - pfo_h**2) * (b/2 + s*B/(2*W))
+    term10 = (1 - pfo_h**2) * (b/2 + s*B/(2*W)) * -1 * collective_risk
+    
+    # r.h.s terms scaled by p**2
+    term11 = (1 - pfo_h**2) * (b/2 + s*B/(2*W)) * collective_risk
+    
+    # This gives us a quadratic in p if we move everything to r.h.s
+    # in the form a x**2 + b x + c = 0
+    a = term11
+    b = term8 + term9 + term10 - term5
+    c = term6 + term7 - term1 - term2 - term3 - term4
+    # We can solve for p using the quadratic formula
+    threshold_p = np.where(a==0,
+                           -c / b,
+                           (-b + (b**2 - 4*a*c)**0.5)/(2*a))
+    threshold_p_alt = np.where(a==0,
+                               -c / b,
+                               (-b - (b**2 - 4*a*c)**0.5)/(2*a))
+    return {**models, 
+            "threshold_as_risk_dominates_au": threshold_p,
+            "threshold_as_risk_dominates_au_alt": threshold_p_alt}
+    
+@method(risk_dominance, "reg-market-v3-p_threshold")
+def risk_dominance(models):
+    names1 = ['b', 'c', 's', 'p', 'B', 'W']
+    names2 = ['pfo_l', 'pfo_h', 'λ', 'r_l', 'r_h', 'g']
+    b, c, s, p, B, W = [models[k] for k in names1]
+    pfo_l, pfo_h, λ, r_l, r_h, g = [models[k] for k in names2]
+    collective_risk = models.get('collective_risk', 0)
+    risk_shared = (1 - (1-p)*collective_risk)
+    mix = models.get('incentive_mix', 0)
+    
+    # We can influence the likelihood that the caught firm loses by a careful
+    # choice of phi_h and decisiveness.
+    
+    k = models.get('decisiveness', 100)
+    phi_h = models.get('phi_h', 1/s)
+    caught_loses_h = ((s * phi_h)**k + 1)**(-1)
+    
+    # The regulatory market payoffs when regulators are hq are as follows:
+    # Notice that one of the terms is missing from Π_h22 in this version.
+    # Π_h11 = B / (2*W) + b/2 - c
+    # Π_h12 = ((1 - pfo_h) * b / (s+1) * risk_shared
+    #          + pfo_h * caught_loses_h * (b + B / W)
+    #          - c)
+    # Π_h21 = (p * (1 - pfo_h) * (s*b / (s + 1) + s * B / W)
+    #          + pfo_h * (1 - caught_loses_h) * B / W)
+    # Π_h22 = (p * (1 - pfo_h**2) * (b/2 + s*B/(2*W)) * risk_shared)
+    
+    # l.h.s terms not scaled by p
+    term1 = B / (2*W) + b/2 - c
+    term2 = (1 - pfo_h) * b / (s+1)
+    term3 = term2 * -1 * collective_risk
+    term4 = pfo_h * caught_loses_h * (b + B / W) - c
+    
+    # l.h.s terms scaled by p
+    term5 = term2 * collective_risk
+    
+    # r.h.s terms not scaled by p
+    term6 = pfo_h * (1 - caught_loses_h) * B / W
+    term7 = 0  # In v2 of the model, there was a non-zero term here
+    
+    # r.h.s terms scaled by p    
+    term8 = (1 - pfo_h) * (s*b / (s + 1) + s * B / W)
+    term9 = (1 - pfo_h**2) * (b/2 + s*B/(2*W))
+    term10 = (1 - pfo_h**2) * (b/2 + s*B/(2*W)) * -1 * collective_risk
+    
+    # r.h.s terms scaled by p**2
+    term11 = (1 - pfo_h**2) * (b/2 + s*B/(2*W)) * collective_risk
+    
+    # This gives us a quadratic in p if we move everything to r.h.s
+    # in the form a x**2 + b x + c = 0
+    a = term11
+    b = term8 + term9 + term10 - term5
+    c = term6 + term7 - term1 - term2 - term3 - term4
+    # We can solve for p using the quadratic formula
+    threshold_p = np.where(a==0,
+                           -c / b,
+                           (-b + (b**2 - 4*a*c)**0.5)/(2*a))
+    threshold_p_alt = np.where(a==0,
+                               -c / b,
+                               (-b - (b**2 - 4*a*c)**0.5)/(2*a))
+    return {**models, 
+            "threshold_as_risk_dominates_au": threshold_p,
+            "threshold_as_risk_dominates_au_alt": threshold_p_alt}
+    
+@method(risk_dominance, "reg-market-v4-p_threshold")
+def risk_dominance(models):
+    names1 = ['b', 'c', 's', 'p', 'B', 'W']
+    names2 = ['pfo_l', 'pfo_h', 'λ', 'r_l', 'r_h', 'g']
+    b, c, s, p, B, W = [models[k] for k in names1]
+    pfo_l, pfo_h, λ, r_l, r_h, g = [models[k] for k in names2]
+    collective_risk = models.get('collective_risk', 0)
+    risk_shared = (1 - (1-p)*collective_risk)
+    mix = models.get('incentive_mix', 0)
+    
+    # We can influence the likelihood that the caught firm loses by a careful
+    # choice of phi_h and decisiveness.
+    
+    k = models.get('decisiveness', 100)
+    phi_h = models.get('phi_h', 1/s)
+    phi2_h = models.get('phi2_h', 1/s)
+    caught_loses_h = ((s * phi_h)**k + 1)**(-1)
+    both_caught_lose_h = ((s * phi2_h)**k + 1)**(-1)
+    
+    # The regulatory market payoffs when regulators are hq are as follows:
+    # Π_h11 = B / (2*W) + b/2 - c
+    # Π_h12 = ((1 - pfo_h) * b / (s+1) * risk_shared
+    #          + pfo_h * caught_loses_h * (b + B / W)
+    #          - c)
+    # Π_h21 = (p * (1 - pfo_h) * (s*b / (s + 1) + s * B / W)
+    #          + pfo_h * (1 - caught_loses_h) * B / W)
+    # Π_h22 = (p * (1 - pfo_h**2) * (b/2 + s*B/(2*W)) * risk_shared
+    #          + pfo_h**2 * both_caught_lose_h * B/(2*W))
+    
+    
+    # l.h.s terms not scaled by p
+    term1 = B / (2*W) + b/2 - c
+    term2 = (1 - pfo_h) * b / (s+1)
+    term3 = term2 * -1 * collective_risk
+    term4 = pfo_h * caught_loses_h * (b + B / W) - c
+    
+    # l.h.s terms scaled by p
+    term5 = term2 * collective_risk
+    
+    # r.h.s terms not scaled by p
+    term6 = pfo_h * (1 - caught_loses_h) * B / W
+    term7 = pfo_h**2 * both_caught_lose_h * B/(2*W)
+    
+    # r.h.s terms scaled by p    
+    term8 = (1 - pfo_h) * (s*b / (s + 1) + s * B / W)
+    term9 = (1 - pfo_h**2) * (b/2 + s*B/(2*W))
+    term10 = (1 - pfo_h**2) * (b/2 + s*B/(2*W)) * -1 * collective_risk
+    
+    # r.h.s terms scaled by p**2
+    term11 = (1 - pfo_h**2) * (b/2 + s*B/(2*W)) * collective_risk
+    
+    # This gives us a quadratic in p if we move everything to r.h.s
+    # in the form a x**2 + b x + c = 0
+    a = term11
+    b = term8 + term9 + term10 - term5
+    c = term6 + term7 - term1 - term2 - term3 - term4
+    # We can solve for p using the quadratic formula
+    threshold_p = np.where(a==0,
+                           -c / b,
+                           (-b + (b**2 - 4*a*c)**0.5)/(2*a))
+    threshold_p_alt = np.where(a==0,
+                               -c / b,
+                               (-b - (b**2 - 4*a*c)**0.5)/(2*a))
+    return {**models, 
+            "threshold_as_risk_dominates_au": threshold_p,
+            "threshold_as_risk_dominates_au_alt": threshold_p_alt}

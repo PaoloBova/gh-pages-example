@@ -1326,8 +1326,10 @@ def build_payoffs(models):
     mix = models.get('incentive_mix', 0)
     
     k = models.get('decisiveness', 100)
-    caught_loses_h = ((s * (1 - pfo_h))**k + 1)**(-1)
-    caught_loses_l = ((s * (1 - pfo_l))**k + 1)**(-1)
+    phi_h = models.get('phi_h', (1 - pfo_h))
+    phi_l = models.get('phi_l', (1 - pfo_l))
+    caught_loses_h = ((s * phi_h)**k + 1)**(-1)
+    caught_loses_l = ((s * phi_l)**k + 1)**(-1)
     
     Π_h11 = B / (2*W) + b/2 - c
     Π_h12 = ((1 - pfo_h) * b / (s+1) * risk_shared
@@ -1453,6 +1455,119 @@ def build_payoffs(models):
     Π_l21 = (p * (1 - pfo_l) * (s*b / (s + 1)  + s * B / W)
                  + pfo_l * (1 - caught_loses_l) * B / W)
     Π_l22 = p * ( 1 - pfo_l**2) * (b/2 + s*B/(2*W)) * risk_shared
+    
+    λ_h = λ * (1 - p) * (1 - pfo_h)
+    λ_l = λ * (1 - p) * (1 - pfo_l)
+    
+    Ω_11 = r_h + g * mix
+    Ω_12 = r_l + g * mix
+    Ω_21 = r_h + g * (pfo_h**2 * mix + pfo_h * (1 - mix)) - λ_h
+    Ω_22 = r_l + g * (pfo_l**2 * mix + pfo_l * (1 - mix)) - λ_l
+    Ω_31 = r_h + g * mix
+    Ω_32 = r_l + g * (pfo_l**2 * mix + pfo_l * (1 - mix)) - λ_l
+    
+    payoffs = {}
+    payoffs["4-1-1"] = {"P3": Ω_11,
+                        "P2": Π_h11,
+                        "P1": Π_h11}
+    payoffs["4-1-2"] = {"P3": (Ω_11 + Ω_21) / 2,
+                        "P2": Π_h12,
+                        "P1": Π_h21}
+    payoffs["4-1-3"] = {"P3": Ω_11,
+                        "P2": Π_h11,
+                        "P1": Π_h11}
+    payoffs["4-2-1"] = {"P3": (Ω_11 + Ω_21) / 2,
+                        "P2": Π_h21,
+                        "P1": Π_h12}
+    payoffs["4-2-2"] = {"P3": Ω_21,
+                        "P2": Π_h22,
+                        "P1": Π_h22}
+    payoffs["4-2-3"] = {"P3": (Ω_11 + Ω_21) / 2,
+                        "P2": Π_h21,
+                        "P1": Π_h12}
+    payoffs["4-3-1"] = {"P3": Ω_11,
+                        "P2": Π_h11,
+                        "P1": Π_h11}
+    payoffs["4-3-2"] = {"P3": (Ω_11 + Ω_21) / 2,
+                        "P2": Π_h12,
+                        "P1": Π_h21}
+    payoffs["4-3-3"] = {"P3": Ω_31,
+                        "P2": Π_h11,
+                        "P1": Π_h11}
+    
+    payoffs["5-1-1"] = {"P3": Ω_12,
+                        "P2": Π_l11,
+                        "P1": Π_l11}
+    payoffs["5-1-2"] = {"P3": (Ω_12 + Ω_22) / 2,
+                        "P2": Π_l12,
+                        "P1": Π_l21}
+    payoffs["5-1-3"] = {"P3": (Ω_12 + Ω_22) / 2,
+                        "P2": Π_l12,
+                        "P1": Π_l21}
+    payoffs["5-2-1"] = {"P3": (Ω_12 + Ω_22) / 2,
+                        "P2": Π_l21,
+                        "P1": Π_l12}
+    payoffs["5-2-2"] = {"P3": Ω_22,
+                        "P2": Π_l22,
+                        "P1": Π_l22}
+    payoffs["5-2-3"] = {"P3": Ω_22,
+                        "P2": Π_l22,
+                        "P1": Π_l22}
+    payoffs["5-3-1"] = {"P3": (Ω_12 + Ω_22) / 2,
+                        "P2": Π_l21,
+                        "P1": Π_l12}
+    payoffs["5-3-2"] = {"P3": Ω_22,
+                        "P2": Π_l22,
+                        "P1": Π_l22}
+    payoffs["5-3-3"] = {"P3": Ω_32,
+                        "P2": Π_l22,
+                        "P1": Π_l22}
+
+    return {**models, "payoffs": payoffs}
+
+
+# %% ../nbs/Payoffs/04_payoffs3.ipynb 12
+@method(build_payoffs, "regulatory_markets_v4_reward_mixed")
+def build_payoffs(models):
+    """Regulatory market payoffs for a mix of incentives and allows a
+    schedule of measures to apply to firms detected as unsafe."""
+    names1 = ['b', 'c', 's', 'p', 'B', 'W']
+    names2 = ['pfo_l', 'pfo_h', 'λ', 'r_l', 'r_h', 'g']
+    b, c, s, p, B, W = [models[k] for k in names1]
+    pfo_l, pfo_h, λ, r_l, r_h, g = [models[k] for k in names2]
+    collective_risk = models.get('collective_risk', 0)
+    risk_shared = (1 - (1-p)*collective_risk)
+    mix = models.get('incentive_mix', 0)
+    
+    k = models.get('decisiveness', 100)
+    phi_h = models.get('phi_h', 1/s)
+    phi2_h = models.get('phi2_h,', 1/s)
+    phi_l = models.get('phi_l', 1/s)
+    phi2_l = models.get('phi2_l', 1/s)
+    caught_loses_h = ((s * phi_h)**k + 1)**(-1)
+    caught_loses_l = ((s * phi_l)**k + 1)**(-1)
+    both_caught_lose_h = ((s * phi2_h)**k + 1)**(-1)
+    both_caught_lose_l = ((s * phi2_l)**k + 1)**(-1)
+    
+    Π_h11 = B / (2*W) + b/2 - c
+    Π_h12 = ((1 - pfo_h) * b / (s+1) * risk_shared
+             + pfo_h * caught_loses_h * (b + B / W)
+             - c)
+    Π_h21 = (p * (1 - pfo_h) * (s*b / (s + 1) + s * B / W)
+             + pfo_h * (1 - caught_loses_h) * B / W)
+    Π_h22 = p * ( 1 - pfo_h**2) * (b/2 + s*B/(2*W)) * risk_shared
+    Π_h22 = (p * (1 - pfo_h**2) * (b/2 + s*B/(2*W)) * risk_shared
+             + pfo_h**2 * both_caught_lose_h * B/(2*W))
+    
+    Π_l11 = B / (2*W) + b/2 - c
+    Π_l12 = ((1 - pfo_l) * b / (s+1) * risk_shared
+             + pfo_l * caught_loses_l * (b + B / W)
+             - c)
+    Π_l21 = (p * (1 - pfo_l) * (s*b / (s + 1)  + s * B / W)
+                 + pfo_l * (1 - caught_loses_l) * B / W)
+    Π_l22 = p * ( 1 - pfo_l**2) * (b/2 + s*B/(2*W)) * risk_shared
+    Π_l22 = (p * ( 1 - pfo_l**2) * (b/2 + s*B/(2*W)) * risk_shared
+             + pfo_l**2  * both_caught_lose_l * B/(2*W))
     
     λ_h = λ * (1 - p) * (1 - pfo_h)
     λ_l = λ * (1 - p) * (1 - pfo_l)

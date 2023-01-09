@@ -25,8 +25,9 @@ def results_to_dataframe_egt(results:dict, # A dictionary containing items from 
                     for k,v in results.items()
                     if (isinstance(v, np.ndarray)
                         and not v.ndim > 1)}
-    for i, strategy in enumerate(results['strategy_set']):
-        flat_results[strategy + "_frequency"] = results['ergodic'][:,i]
+    for i, strategy in enumerate(results.get('strategy_set', [])):
+        if "ergodic" in list(results.keys()):
+            flat_results[strategy + "_frequency"] = results['ergodic'][:,i]
     dropped_items = [k for k in results.keys() if k not in flat_results]
     if (len(dropped_items)>0 and not suppress):
         print(f"{dropped_items_warning} {dropped_items}")
