@@ -303,3 +303,170 @@ def risk_dominance(models):
     return {**models, 
             "threshold_as_risk_dominates_au": threshold_p,
             "threshold_as_risk_dominates_au_alt": threshold_p_alt}
+    
+
+@method(risk_dominance, "reg-market-v5-p_threshold")
+def risk_dominance(models):
+    names1 = ['b', 'c', 's', 'p', 'B', 'W']
+    names2 = ['pfo_l', 'pfo_h', 'λ', 'r_l', 'r_h', 'g']
+    b, c, s, p, B, W = [models[k] for k in names1]
+    pfo_l, pfo_h, λ, r_l, r_h, g = [models[k] for k in names2]
+    collective_risk = models.get('collective_risk', 0)
+    risk_shared = (1 - (1-p)*collective_risk)
+    mix = models.get('incentive_mix', 0)
+    
+    # We can influence the likelihood that the caught firm loses by a careful
+    # choice of phi_h and decisiveness.
+    
+    k = models.get('decisiveness', 100)
+    phi_h = models.get('phi_h', 1/s)
+    phi2_h = models.get('phi2_h', 1/s)
+    caught_loses_h = ((s * phi_h)**k + 1)**(-1)
+    both_caught_fail_h = ((s * phi2_h)**k + 1)**(-1)
+    
+    # The regulatory market payoffs when regulators are hq are as follows:
+    # Π_h11 = B / (2*W) + b/2 - c
+    # Π_h12 = ((1 - pfo_h) * b / (s+1) * risk_shared
+    #          + pfo_h * caught_loses_h * (b + B / W)
+    #          - c)
+    # Π_h21 = (p * (1 - pfo_h) * (s*b / (s + 1) + s * B / W)
+    #          + pfo_h * (1 - caught_loses_h) * B / W)
+    # Π_h22 = (p * (1 - pfo_h**2) * (b/2 + s*B/(2*W)) * risk_shared
+    #          + pfo_h**2 * (1 - both_caught_fail_h) * B/(2*W))
+    
+    
+    # l.h.s terms not scaled by p
+    term1 = B / (2*W) + b/2 - c
+    term2 = (1 - pfo_h) * b / (s+1)
+    term3 = term2 * -1 * collective_risk
+    term4 = pfo_h * caught_loses_h * (b + B / W) - c
+    
+    # l.h.s terms scaled by p
+    term5 = term2 * collective_risk
+    
+    # r.h.s terms not scaled by p
+    term6 = pfo_h * (1 - caught_loses_h) * B / W
+    term7 = pfo_h**2 * (1 - both_caught_fail_h) * B/(2*W)
+    
+    # r.h.s terms scaled by p    
+    term8 = (1 - pfo_h) * (s*b / (s + 1) + s * B / W)
+    term9 = (1 - pfo_h**2) * (b/2 + s*B/(2*W))
+    term10 = (1 - pfo_h**2) * (b/2 + s*B/(2*W)) * -1 * collective_risk
+    
+    # r.h.s terms scaled by p**2
+    term11 = (1 - pfo_h**2) * (b/2 + s*B/(2*W)) * collective_risk
+    
+    # This gives us a quadratic in p if we move everything to r.h.s
+    # in the form a x**2 + b x + c = 0
+    a = term11
+    b = term8 + term9 + term10 - term5
+    c = term6 + term7 - term1 - term2 - term3 - term4
+    # We can solve for p using the quadratic formula
+    threshold_p = np.where(a==0,
+                           -c / b,
+                           (-b + (b**2 - 4*a*c)**0.5)/(2*a))
+    threshold_p_alt = np.where(a==0,
+                               -c / b,
+                               (-b - (b**2 - 4*a*c)**0.5)/(2*a))
+    return {**models, 
+            "threshold_as_risk_dominates_au": threshold_p,
+            "threshold_as_risk_dominates_au_alt": threshold_p_alt}
+    
+@method(risk_dominance, "reg-market-v6-p_threshold")
+def risk_dominance(models):
+    names1 = ['b', 'c', 's', 'p', 'B', 'W']
+    names2 = ['pfo_l', 'pfo_h', 'λ', 'r_l', 'r_h', 'g']
+    b, c, s, p, B, W = [models[k] for k in names1]
+    pfo_l, pfo_h, λ, r_l, r_h, g = [models[k] for k in names2]
+    collective_risk = models.get('collective_risk', 0)
+    risk_shared = (1 - (1-p)*collective_risk)
+    mix = models.get('incentive_mix', 0)
+    
+    # We can influence the likelihood that the caught firm loses by a careful
+    # choice of phi_h and decisiveness.
+    
+
+    k = models.get('decisiveness', 100)
+    # Win impact of regulators when they catch 1 or 2 safety violators
+    phi_h = models.get('phi_h', 1/s)
+    phi2_h = models.get('phi2_h,', 1/s)
+    # Speed impact of regulators when they catch 1 or 2 safety violators
+    theta_h = models.get('theta_h', 1/s)
+    theta2_h = models.get('theta2_h,', 1/s)
+    # Risk impact of regulators when they catch 1 or 2 safety violators
+    gamma_h = models.get('gamma_h', phi_h)
+    gamma2_h = models.get('gamma2_h', phi2_h)
+    # Tullock contest to determine which firm wins after
+    # one safety violator is caught
+    caught_loses_h = ((s * phi_h)**k + 1)**(-1)
+    # Tullock contest to determine whether any firm wins if they are both
+    # safety violators who were caught by the regulator
+    both_caught_fail_h = (2 * (s * phi2_h)**k + 1)**(-1)
+    risk_shared_reg = (1 - (1-p)*collective_risk * gamma_h)
+    risk_shared_reg2 = (1 - (1-p)*collective_risk * gamma2_h)
+    
+    
+    # The regulatory market payoffs when regulators are hq are as follows:
+    # Π_h11 = B / (2*W) + b/2 - c
+    # Π_h12 = ((1 - pfo_h) * b / (s+1) * risk_shared
+    #          + pfo_h * caught_loses_h * (b + B / W)
+    #          - c)
+    # Π_h21 = (p * (1 - pfo_h) * (s*b / (s + 1) + s * B / W)
+    #          + ((1 - (1 - p) * gamma_h)
+    #             * pfo_h * (1 - caught_loses_h)
+    #             * theta_h * s
+    #             * B / W))
+    # Π_h22 = (p * (1 - pfo_h**2) * (b/2 + s*B/(2*W)) * risk_shared
+    #          + ((1 - (1 - p) * gamma2_h) * risk_shared_reg2
+    #             * pfo_h**2 * (1 - both_caught_fail_h)
+    #             * theta2_h * s
+    #             * B/(2*W)))
+    
+    # Note that:
+    # (1 - (1 - p) * gamma2_h) * risk_shared_reg2
+    # = (1 - (1 + collective_risk) * (1 - p) * gamma2_h + collective_risk * (1-p)**2 * gamma2_h**2)
+    
+    # l.h.s terms not scaled by p
+    term1 = B / (2*W) + b/2 - c
+    term2 = (1 - pfo_h) * b / (s+1)
+    term3 = term2 * -1 * collective_risk
+    term4 = pfo_h * caught_loses_h * (b + B / W) - c
+    
+    # l.h.s terms scaled by p
+    term5 = term2 * collective_risk
+    
+    # r.h.s terms not scaled by p
+    term6 = pfo_h * (1 - caught_loses_h) * theta_h * s * B / W
+    term7 = -gamma_h * term6
+    term8 = pfo_h**2 * (1 - both_caught_fail_h) * theta2_h * s * B/(2*W)
+    term9 = term8 * -1 * (1 + collective_risk) * gamma2_h
+    term10 = term8 * collective_risk * gamma2_h**2
+    
+    # r.h.s terms scaled by p
+    term11 = (1 - pfo_h) * (s*b / (s + 1) + s * B / W)
+    term12 = gamma_h * term6
+    term13 = (1 - pfo_h**2) * (b/2 + s*B/(2*W))
+    term14 = (1 - pfo_h**2) * (b/2 + s*B/(2*W)) * -1 * collective_risk
+    term15 = term8 * (1 + collective_risk) * gamma2_h
+    term16 = term8 * -1 * 2 * collective_risk * gamma2_h**2
+    
+    
+    # r.h.s terms scaled by p**2
+    term17 = (1 - pfo_h**2) * (b/2 + s*B/(2*W)) * collective_risk
+    term18 = term8 * collective_risk * gamma2_h**2
+    
+    # This gives us a quadratic in p if we move everything to r.h.s
+    # in the form a x**2 + b x + c = 0
+    a = term17 + term18
+    b = term11 + term12 + term13 + term14 + term15 + term16 - term5
+    c = term6 + term7 + term8 + term9 + term10 - term1 - term2 - term3 - term4 
+    # We can solve for p using the quadratic formula
+    threshold_p = np.where(a==0,
+                           -c / b,
+                           (-b + (b**2 - 4*a*c)**0.5)/(2*a))
+    threshold_p_alt = np.where(a==0,
+                               -c / b,
+                               (-b - (b**2 - 4*a*c)**0.5)/(2*a))
+    return {**models, 
+            "threshold_as_risk_dominates_au": threshold_p,
+            "threshold_as_risk_dominates_au_alt": threshold_p_alt}

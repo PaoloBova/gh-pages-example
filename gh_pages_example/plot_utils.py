@@ -55,7 +55,8 @@ def plot_heatmap(table, # A pivot table, created using `pandas.pivot` function
                  zmin=0,
                  zmax=1,
                  zcenter=None,
-                 norm=None
+                 norm=None,
+                 interpolation=None,
                 ):
     """Plot heatmap using the index, columns, and values from `table`."""
     if figure_object==None:
@@ -71,7 +72,7 @@ def plot_heatmap(table, # A pivot table, created using `pandas.pivot` function
                            table.index.max()],
                    vmin=zmin,
                    vmax=zmax,
-                   interpolation='nearest',
+                   interpolation=interpolation,
                    origin='lower',
                    aspect='auto')
     ax.set(xlabel=xlabel,

@@ -30,9 +30,12 @@ def thread_macro(current_value, *funcs, identifier="self"):
         if isinstance(func, (list, tuple)):
             place = 0
             for i, el in enumerate(func[1:]):
-                if el == identifier:
-                    place = i
-                    func = [el for el in func if el != identifier]
+                try:
+                    if el == identifier:
+                        place = i
+                        func = [el for el in func if el != identifier]
+                except:
+                    pass
             func, args1, args2 = func[0], func[1:place + 1], func[place + 1:]
             current_value = func(*args1, current_value, *args2)
         else:

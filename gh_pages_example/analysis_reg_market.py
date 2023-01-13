@@ -18,6 +18,7 @@ import copy
 import typing
 import warnings
 
+import chaospy
 import fastcore.test
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -27,7 +28,7 @@ import numpy as np
 import pandas
 import seaborn as sns
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 16
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 52
 Z = {"S2": 100, "S1": 100}
 β = 1
 sector_strategies = {"S2": [4, 5],
@@ -54,7 +55,7 @@ results = thread_macro(models,
 result_sums = np.sum(results['ergodic'], axis=-1)
 fastcore.test.test_close(result_sums, 1)
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 35
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 71
 Z = {"S2": 100, "S1": 100}
 β = 1
 sector_strategies = {"S2": [4, 5],
@@ -94,7 +95,7 @@ df['LQ_frequency'] = (df['LQ-AS_frequency']
 
 table = df.pivot_table(index='pr', columns='s', values='AU_frequency')
 plot_heatmap(table,
-             xlabel='Speed avantage, s',
+             xlabel='Speed advantage, s',
              ylabel='Risk of an AI disaster, pr',
              zlabel='AU Frequency',
              cmap='inferno',
@@ -102,7 +103,7 @@ plot_heatmap(table,
 
 table = df.pivot_table(index='pr', columns='s', values='LQ_frequency')
 plot_heatmap(table,
-             xlabel='Speed avantage, s',
+             xlabel='Speed advantage, s',
              ylabel='Risk of an AI disaster, pr',
              zlabel='LQ Frequency',
              cmap='inferno',
@@ -114,7 +115,7 @@ plot_strategy_distribution(df[df.s==1.5],
                            thresholds=None,
                           )
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 37
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 73
 Z = {"S2": 100, "S1": 100}
 β = 0.01
 sector_strategies = {"S2": [4, 5],
@@ -154,7 +155,7 @@ df['LQ_frequency'] = (df['LQ-AS_frequency']
 
 table = df.pivot_table(index='pr', columns='s', values='AU_frequency')
 plot_heatmap(table,
-             xlabel='Speed avantage, s',
+             xlabel='Speed advantage, s',
              ylabel='Risk of an AI disaster, pr',
              zlabel='AU Frequency',
              cmap='inferno',
@@ -162,7 +163,7 @@ plot_heatmap(table,
 
 table = df.pivot_table(index='pr', columns='s', values='LQ_frequency')
 plot_heatmap(table,
-             xlabel='Speed avantage, s',
+             xlabel='Speed advantage, s',
              ylabel='Risk of an AI disaster, pr',
              zlabel='LQ Frequency',
              cmap='inferno',
@@ -174,7 +175,7 @@ plot_strategy_distribution(df[df.s==1.5],
                            thresholds=None,
                           )
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 40
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 76
 Z = {"S2": 100, "S1": 100}
 β = 1
 sector_strategies = {"S2": [4, 5],
@@ -214,7 +215,7 @@ df['LQ_frequency'] = (df['LQ-AS_frequency']
 
 table = df.pivot_table(index='pr', columns='s', values='AU_frequency')
 plot_heatmap(table,
-             xlabel='Speed avantage, s',
+             xlabel='Speed advantage, s',
              ylabel='Risk of an AI disaster, pr',
              zlabel='AU Frequency',
              cmap='inferno',
@@ -222,7 +223,7 @@ plot_heatmap(table,
 
 table = df.pivot_table(index='pr', columns='s', values='LQ_frequency')
 plot_heatmap(table,
-             xlabel='Speed avantage, s',
+             xlabel='Speed advantage, s',
              ylabel='Risk of an AI disaster, pr',
              zlabel='LQ Frequency',
              cmap='inferno',
@@ -234,7 +235,7 @@ plot_strategy_distribution(df[df.s==1.5],
                            thresholds=None,
                           )
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 41
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 77
 Z = {"S2": 100, "S1": 100}
 β = 1
 sector_strategies = {"S2": [4, 5],
@@ -274,7 +275,7 @@ df['LQ_frequency'] = (df['LQ-AS_frequency']
 
 table = df.pivot_table(index='pr', columns='s', values='AU_frequency')
 plot_heatmap(table,
-             xlabel='Speed avantage, s',
+             xlabel='Speed advantage, s',
              ylabel='Risk of an AI disaster, pr',
              zlabel='AU Frequency',
              cmap='inferno',
@@ -282,7 +283,7 @@ plot_heatmap(table,
 
 table = df.pivot_table(index='pr', columns='s', values='LQ_frequency')
 plot_heatmap(table,
-             xlabel='Speed avantage, s',
+             xlabel='Speed advantage, s',
              ylabel='Risk of an AI disaster, pr',
              zlabel='LQ Frequency',
              cmap='inferno',
@@ -294,7 +295,7 @@ plot_strategy_distribution(df[df.s==1.5],
                            thresholds=None,
                           )
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 47
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 83
 Z = {"S2": 100, "S1": 100}
 β = 1
 sector_strategies = {"S2": [4, 5],
@@ -333,7 +334,7 @@ df['LQ_frequency'] = (df['LQ-AS_frequency']
 
 table = df.pivot_table(index='pr', columns='s', values='AU_frequency')
 plot_heatmap(table,
-             xlabel='Speed avantage, s',
+             xlabel='Speed advantage, s',
              ylabel='Risk of an AI disaster, pr',
              zlabel='AU Frequency',
              cmap='inferno',
@@ -341,7 +342,7 @@ plot_heatmap(table,
 
 table = df.pivot_table(index='pr', columns='s', values='LQ_frequency')
 plot_heatmap(table,
-             xlabel='Speed avantage, s',
+             xlabel='Speed advantage, s',
              ylabel='Risk of an AI disaster, pr',
              zlabel='LQ Frequency',
              cmap='inferno',
@@ -353,7 +354,7 @@ plot_strategy_distribution(df[df.s==1.5],
                            thresholds=None,
                           )
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 48
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 84
 Z = {"S2": 100, "S1": 100}
 β = 1
 sector_strategies = {"S2": [4, 5],
@@ -393,7 +394,7 @@ df['LQ_frequency'] = (df['LQ-AS_frequency']
 
 table = df.pivot_table(index='pr', columns='s', values='AU_frequency')
 plot_heatmap(table,
-             xlabel='Speed avantage, s',
+             xlabel='Speed advantage, s',
              ylabel='Risk of an AI disaster, pr',
              zlabel='AU Frequency',
              cmap='inferno',
@@ -401,7 +402,7 @@ plot_heatmap(table,
 
 table = df.pivot_table(index='pr', columns='s', values='LQ_frequency')
 plot_heatmap(table,
-             xlabel='Speed avantage, s',
+             xlabel='Speed advantage, s',
              ylabel='Risk of an AI disaster, pr',
              zlabel='LQ Frequency',
              cmap='inferno',
@@ -413,7 +414,7 @@ plot_strategy_distribution(df[df.s==1.5],
                            thresholds=None,
                           )
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 50
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 86
 Z = {"S2": 100, "S1": 100}
 β = 1
 sector_strategies = {"S2": [4, 5],
@@ -454,7 +455,7 @@ df['LQ_frequency'] = (df['LQ-AS_frequency']
 
 table = df.pivot_table(index='pr', columns='s', values='AU_frequency')
 plot_heatmap(table,
-             xlabel='Speed avantage, s',
+             xlabel='Speed advantage, s',
              ylabel='Risk of an AI disaster, pr',
              zlabel='AU Frequency',
              cmap='inferno',
@@ -462,7 +463,7 @@ plot_heatmap(table,
 
 table = df.pivot_table(index='pr', columns='s', values='LQ_frequency')
 plot_heatmap(table,
-             xlabel='Speed avantage, s',
+             xlabel='Speed advantage, s',
              ylabel='Risk of an AI disaster, pr',
              zlabel='LQ Frequency',
              cmap='inferno',
@@ -474,7 +475,7 @@ plot_strategy_distribution(df[df.s==1.5],
                            thresholds=None,
                           )
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 52
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 88
 Z = {"S2": 100, "S1": 100}
 β = 1
 sector_strategies = {"S2": [4, 5],
@@ -522,7 +523,7 @@ df['AU_frequency_uncaught'] = (df['AU_frequency']
 
 table = df.pivot_table(index='pr', columns='s', values='AU_frequency')
 plot_heatmap(table,
-             xlabel='Speed avantage, s',
+             xlabel='Speed advantage, s',
              ylabel='Risk of an AI disaster, pr',
              zlabel='AU Frequency',
              cmap='inferno',
@@ -534,7 +535,7 @@ plt.plot(table.columns, df[df.pr==1]['threshold_risk_dominant_safety']);
 
 table = df.pivot_table(index='pr', columns='s', values='LQ_frequency')
 plot_heatmap(table,
-             xlabel='Speed avantage, s',
+             xlabel='Speed advantage, s',
              ylabel='Risk of an AI disaster, pr',
              zlabel='LQ Frequency',
              cmap='inferno',
@@ -548,7 +549,7 @@ plot_strategy_distribution(df[df.s == 1.5],
 
 table = df.pivot_table(index='pr', columns='s', values='AU_frequency_uncaught')
 plot_heatmap(table,
-             xlabel='Speed avantage, s',
+             xlabel='Speed advantage, s',
              ylabel='Risk of an AI disaster, pr',
              zlabel='AU Frequency uncaught',
              cmap='inferno',
