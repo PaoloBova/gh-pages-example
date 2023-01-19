@@ -23,11 +23,28 @@ def threshold_society_prefers_safety_dsair(models):
     Always Safe in the DSAIR model."""
     s, B, W = [models[k]
                for k in ['s', 'B', 'W']]
+    collective_risk = models.get('collective_risk', 0)
     πAA, πAB, πBA, πBB = [models['payoffs_sr'][:, i, j]
                           for i in range(2) for j in range(2)]
-    p_risk = 1 - ((πAA + B / (2 * W))
-                  / (πBB + s * B / (2 * W)))
-    return {**models, "threshold_society_prefers_safety": p_risk}
+    a = collective_risk
+    b = (1 - collective_risk)
+    c = ((πAA + B / (2 * W))
+         / (πBB + s * B / (2 * W))) * -1
+    # This gives us a quadratic in p if we move everything to r.h.s
+    # in the form a p**2 + b p + c = 0
+ 
+    # We can solve for p using the quadratic formula
+    threshold_p = np.where(a==0,
+                           -c / b,
+                           (-b + (b**2 - 4*a*c)**0.5)/(2*a))
+    threshold_p_alt = np.where(a==0,
+                               -c / b,
+                               (-b - (b**2 - 4*a*c)**0.5)/(2*a))
+    p_risk = 1 - threshold_p
+    p_risk_alt = 1 - threshold_p_alt
+    return {**models,
+            "threshold_society_prefers_safety": p_risk,
+            "threshold_society_prefers_safety_alt": p_risk_alt}
 
 # %% ../nbs/03_analytical_conditions.ipynb 9
 def threshold_risk_dominant_safety_dsair(models):
@@ -35,11 +52,28 @@ def threshold_risk_dominant_safety_dsair(models):
     against Always Unsafe in the DSAIR model."""
     s, B, W = [models[k]
                for k in ['s', 'B', 'W']]
+    collective_risk = models.get('collective_risk', 0)
     πAA, πAB, πBA, πBB = [models['payoffs_sr'][:, i, j]
                           for i in range(2) for j in range(2)]
-    p_risk = 1 - ((πAA + πAB + B / (2 * W))
-                  / (πBA + πBB + 3 * s * B / (2 * W)))
-    return {**models, "threshold_risk_dominant_safety": p_risk}
+    a = collective_risk
+    b = (1 - collective_risk)
+    c = ((πAA + πAB + B / (2 * W))
+         / (πBA + πBB + 3 * s * B / (2 * W))) * -1
+     # This gives us a quadratic in p if we move everything to r.h.s
+    # in the form a p**2 + b p + c = 0
+
+    # We can solve for p using the quadratic formula
+    threshold_p = np.where(a==0,
+                           -c / b,
+                           (-b + (b**2 - 4*a*c)**0.5)/(2*a))
+    threshold_p_alt = np.where(a==0,
+                               -c / b,
+                               (-b - (b**2 - 4*a*c)**0.5)/(2*a))
+    p_risk = 1 - threshold_p
+    p_risk_alt = 1 - threshold_p_alt
+    return {**models,
+            "threshold_risk_dominant_safety": p_risk,
+            "threshold_risk_dominant_safety_alt": p_risk_alt}
 
 # %% ../nbs/03_analytical_conditions.ipynb 10
 def threshold_risk_dominant_safety_reg_market(models):
@@ -48,11 +82,28 @@ def threshold_risk_dominant_safety_reg_market(models):
     is fixed."""
     s, B, W = [models[k]
                for k in ['s', 'B', 'W']]
+    collective_risk = models.get('collective_risk', 0)
     πAA, πAB, πBA, πBB = [models['payoffs_sr'][:, i, j]
                           for i in range(2) for j in range(2)]
-    p_risk = 1 - ((πAA + πAB + B / (2 * W))
-                  / (πBA + πBB + 3 * s * B / (2 * W)))
-    return {**models, "threshold_risk_dominant_safety": p_risk}
+    a = collective_risk
+    b = (1 - collective_risk)
+    c = ((πAA + πAB + B / (2 * W))
+         / (πBA + πBB + 3 * s * B / (2 * W))) * -1
+     # This gives us a quadratic in p if we move everything to r.h.s
+    # in the form a p**2 + b p + c = 0
+    
+    # We can solve for p using the quadratic formula
+    threshold_p = np.where(a==0,
+                           -c / b,
+                           (-b + (b**2 - 4*a*c)**0.5)/(2*a))
+    threshold_p_alt = np.where(a==0,
+                               -c / b,
+                               (-b - (b**2 - 4*a*c)**0.5)/(2*a))
+    p_risk = 1 - threshold_p
+    p_risk_alt = 1 - threshold_p_alt
+    return {**models,
+            "threshold_risk_dominant_safety": p_risk,
+            "threshold_risk_dominant_safety_alt": p_risk_alt}
 
 # %% ../nbs/03_analytical_conditions.ipynb 12
 def threshold_ps_r_d_au(models):

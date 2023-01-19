@@ -13,7 +13,9 @@ import collections
 import functools
 import itertools
 import math
+import typing
 
+import chaospy
 import fastcore
 import more_itertools
 from nbdev.showdoc import *
@@ -32,7 +34,7 @@ def model_builder(saved_args:dict, # a dictionary containing parameters we want 
                   for k,v in saved_args.items()
                   if (isinstance(v, np.ndarray)
                       or (isinstance(v, list)
-                          and all(isinstance(el, float) for el in v)))}
+                          and all(isinstance(el, (float, int)) for el in v)))}
     axes_args2 = {k: np.arange(v["start"], v["stop"], v["step"])
                   for k,v in saved_args.items()
                   if (isinstance(v, dict)
@@ -42,8 +44,16 @@ def model_builder(saved_args:dict, # a dictionary containing parameters we want 
                                 override=override)
     models = {}
     # add grid parameters first
+    col_end = dict(zip(axes_args.keys(),
+                            np.cumsum([v.shape[-1] if np.ndim(v)==2 else 1
+                             for v in axes_args.values()])))
+    col_start = {arg: col_end[arg] - (v.shape[-1] if np.ndim(v)==2 else 1)
+                  for arg, v in axes_args.items()}
     for i, arg in enumerate(axes_args.keys()):
-        models[arg] = grid[:, i]
+        if col_start[arg] + 1 == col_end[arg]:
+            models[arg] = grid[:, col_start[arg]]
+        else:
+            models[arg] = grid[:, col_start[arg]:col_end[arg]]
     # add fixed parameters next
     for arg, v in saved_args.items():
         if arg not in (exclude_args
@@ -57,7 +67,7 @@ def model_builder(saved_args:dict, # a dictionary containing parameters we want 
             models[arg] = saved_args[arg]
     return models
 
-# %% ../nbs/model_utils.ipynb 10
+# %% ../nbs/model_utils.ipynb 19
 def find_unique_allocations(n,  # The number of items to allocate
                             k):  # The number of bins that items can be allocated to
     """Find all combinations with replacement of 'n' of the first `k` integers
@@ -68,7 +78,7 @@ def find_unique_allocations(n,  # The number of items to allocate
     return allocations
 
 
-# %% ../nbs/model_utils.ipynb 18
+# %% ../nbs/model_utils.ipynb 27
 def find_unique_counts(count_groups, current_sub_group):
     """Build a list of all unique count groups given an allocation and a list
     of existing unique counts."""
@@ -111,7 +121,7 @@ def find_unique_counts(count_groups, current_sub_group):
     return new_count_groups
 
 
-# %% ../nbs/model_utils.ipynb 27
+# %% ../nbs/model_utils.ipynb 36
 @multi
 def create_profiles(models):
     """Create strategy profiles relevant to the strategies, players, and sectors
@@ -264,7 +274,7 @@ def create_profiles(models):
     fastcore.test.test_eq(len(profiles), n_profiles)
     return {**models, "profiles": profiles}
 
-# %% ../nbs/model_utils.ipynb 40
+# %% ../nbs/model_utils.ipynb 49
 @multi
 def profile_filter(models):
     "Filter strategy profiles to those which satisfy the given rule."
@@ -299,7 +309,7 @@ def profile_filter(models):
            `profile_filter_rule`. Try specifying one.""")
     return models
 
-# %% ../nbs/model_utils.ipynb 43
+# %% ../nbs/model_utils.ipynb 52
 @method(profile_filter, 'relevant_to_transition')
 def profile_filter(models):
     """Filter for strategy profiles relevant to the given transition."""
@@ -339,7 +349,7 @@ def profile_filter(models):
         return {**models, "profiles_filtered": profiles_filtered}
     return models
 
-# %% ../nbs/model_utils.ipynb 45
+# %% ../nbs/model_utils.ipynb 54
 def apply_profile_filters(models):
     "Apply all profile filters listed in `profile_filters` in `models`."
     for rule in models.get('profile_filters', 
@@ -348,7 +358,7 @@ def apply_profile_filters(models):
         models = profile_filter({**models, "profile_filter_rule": rule})
     return models
 
-# %% ../nbs/model_utils.ipynb 50
+# %% ../nbs/model_utils.ipynb 59
 allowed_sectors = {"P3": ["S2"],
                    "P2": ["S2"],
                    "P1": ["S1"]}
@@ -370,7 +380,7 @@ expected = ["2-2-0", "2-2-1",
 fastcore.test.test_eq(result, expected)
 fastcore.test.test_eq(len(result), 8)
 
-# %% ../nbs/model_utils.ipynb 52
+# %% ../nbs/model_utils.ipynb 61
 allowed_sectors = {"P3": ["S3"],
                    "P2": ["S2"],
                    "P1": ["S1"]}
@@ -394,7 +404,7 @@ expected = ["4-2-0",
            ]
 fastcore.test.test_eq(result, expected)
 
-# %% ../nbs/model_utils.ipynb 56
+# %% ../nbs/model_utils.ipynb 65
 sector_strategies = {"S2": [2, 3],
                      "S1": [0, 1]}
 transition_indices = ["3-0", "3-1"]
@@ -421,7 +431,7 @@ fastcore.test.test_eq(result, expected)
 expected = (np.sum(n_strategies) - 1) ** n_players  # 1 of the 4 strategies won't be relevant here
 fastcore.test.test_eq(len(result), expected)
 
-# %% ../nbs/model_utils.ipynb 58
+# %% ../nbs/model_utils.ipynb 67
 sector_strategies = {"S3": [4, 5],
                      "S2": [2, 3],
                      "S1": [0, 1]}
@@ -437,7 +447,7 @@ result = profile_filter(models)['profiles_filtered']
 expected = (np.sum(n_strategies) - 2) ** n_players  # 2 of the 6 strategies won't be relevant here
 fastcore.test.test_eq(len(result), expected)
 
-# %% ../nbs/model_utils.ipynb 61
+# %% ../nbs/model_utils.ipynb 70
 allowed_sectors = {"P3": ["S3"],
                    "P2": ["S2"],
                    "P1": ["S1"]}
@@ -461,7 +471,7 @@ expected = ["5-3-0", "5-3-1"]
 fastcore.test.test_eq(len(result['profiles_filtered']), 2)
 fastcore.test.test_eq(result['profiles_filtered'], expected)
 
-# %% ../nbs/model_utils.ipynb 63
+# %% ../nbs/model_utils.ipynb 72
 allowed_sectors = {"P3": ["S3"],
                    "P2": ["S2"],
                    "P1": ["S1"]}
@@ -492,7 +502,7 @@ fastcore.test.test_eq(result2['profiles_filtered'], expected)
 fastcore.test.test_eq(result1['profiles_filtered'],
                       result2['profiles_filtered'])
 
-# %% ../nbs/model_utils.ipynb 65
+# %% ../nbs/model_utils.ipynb 74
 allowed_sectors = {"P3": ["S3"],
                    "P2": ["S2"],
                    "P1": ["S1"]}
@@ -515,7 +525,7 @@ result = apply_profile_filters(models)
 expected = ["5-3-0", "5-3-1"]
 fastcore.test.test_eq(result['profiles_filtered'], expected)
 
-# %% ../nbs/model_utils.ipynb 67
+# %% ../nbs/model_utils.ipynb 76
 allowed_sectors = {"P3": ["S2"],
                    "P2": ["S2"],
                    "P1": ["S1"]}
@@ -546,7 +556,7 @@ fastcore.test.test_eq(result2['profiles_filtered'], expected)
 fastcore.test.test_eq(result1['profiles_filtered'],
                       result2['profiles_filtered'])
 
-# %% ../nbs/model_utils.ipynb 69
+# %% ../nbs/model_utils.ipynb 78
 allowed_sectors = {"P3": ["S2"],
                    "P2": ["S2"],
                    "P1": ["S1"]}
@@ -579,7 +589,7 @@ fastcore.test.test_eq(result1['profiles_filtered'], expected)
 fastcore.test.test_eq(result2['profiles_filtered'], expected)
 fastcore.test.test_eq(result3['profiles_filtered'], expected)
 
-# %% ../nbs/model_utils.ipynb 71
+# %% ../nbs/model_utils.ipynb 80
 @method(create_profiles, "allowed_sectors")
 def create_profiles(models):
     """Create all strategy profiles for the set of models."""

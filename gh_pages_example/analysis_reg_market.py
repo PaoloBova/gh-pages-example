@@ -20,15 +20,18 @@ import warnings
 
 import chaospy
 import fastcore.test
+import ipywidgets
+from ipywidgets import interact
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from nbdev.showdoc import *
 import nptyping
 import numpy as np
 import pandas
+import scipy
 import seaborn as sns
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 52
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 126
 Z = {"S2": 100, "S1": 100}
 β = 1
 sector_strategies = {"S2": [4, 5],
@@ -55,7 +58,7 @@ results = thread_macro(models,
 result_sums = np.sum(results['ergodic'], axis=-1)
 fastcore.test.test_close(result_sums, 1)
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 71
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 145
 Z = {"S2": 100, "S1": 100}
 β = 1
 sector_strategies = {"S2": [4, 5],
@@ -115,7 +118,7 @@ plot_strategy_distribution(df[df.s==1.5],
                            thresholds=None,
                           )
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 73
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 147
 Z = {"S2": 100, "S1": 100}
 β = 0.01
 sector_strategies = {"S2": [4, 5],
@@ -175,7 +178,7 @@ plot_strategy_distribution(df[df.s==1.5],
                            thresholds=None,
                           )
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 76
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 150
 Z = {"S2": 100, "S1": 100}
 β = 1
 sector_strategies = {"S2": [4, 5],
@@ -235,7 +238,7 @@ plot_strategy_distribution(df[df.s==1.5],
                            thresholds=None,
                           )
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 77
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 151
 Z = {"S2": 100, "S1": 100}
 β = 1
 sector_strategies = {"S2": [4, 5],
@@ -295,7 +298,7 @@ plot_strategy_distribution(df[df.s==1.5],
                            thresholds=None,
                           )
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 83
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 157
 Z = {"S2": 100, "S1": 100}
 β = 1
 sector_strategies = {"S2": [4, 5],
@@ -354,7 +357,7 @@ plot_strategy_distribution(df[df.s==1.5],
                            thresholds=None,
                           )
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 84
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 158
 Z = {"S2": 100, "S1": 100}
 β = 1
 sector_strategies = {"S2": [4, 5],
@@ -414,7 +417,7 @@ plot_strategy_distribution(df[df.s==1.5],
                            thresholds=None,
                           )
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 86
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 160
 Z = {"S2": 100, "S1": 100}
 β = 1
 sector_strategies = {"S2": [4, 5],
@@ -475,7 +478,7 @@ plot_strategy_distribution(df[df.s==1.5],
                            thresholds=None,
                           )
 
-# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 88
+# %% ../nbs/Analysis/11_analysis_regulator_markets.ipynb 162
 Z = {"S2": 100, "S1": 100}
 β = 1
 sector_strategies = {"S2": [4, 5],

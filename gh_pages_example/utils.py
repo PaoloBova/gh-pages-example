@@ -77,8 +77,9 @@ def build_grid_from_axes(axes:list, # Each axis in axes gives an array of values
 
     dtypes = (float, int, bool, str)
     for i, axis in enumerate(axes):
-        condition = isinstance(axis, dtypes) or all(
-            isinstance(el, dtypes) for el in list(axis))
+        condition = (isinstance(axis, dtypes)
+                     or all(isinstance(el, dtypes) for el in list(axis))
+                     or (isinstance(axis, np.ndarray) and np.ndim(axis)==1))
         axes[i] = np.array([axis]).T if condition else axis
     final_size = np.prod([axis.shape[0] for axis in axes])
     if (final_size > 5*10**6) & (not override):
@@ -87,7 +88,7 @@ def build_grid_from_axes(axes:list, # Each axis in axes gives an array of values
     tensor = functools.reduce(broadcast_concatenate_axes, axes)
     return tensor.reshape((-1, tensor.shape[-1]))
 
-# %% ../nbs/utils.ipynb 18
+# %% ../nbs/utils.ipynb 21
 def multi(dispatch_fn):
     def _inner(*args, **kwargs):
         return _inner.__multi__.get(
@@ -100,7 +101,7 @@ def multi(dispatch_fn):
     _inner.__multi_default__ = lambda *args, **kwargs: None  # Default default
     return _inner
 
-# %% ../nbs/utils.ipynb 19
+# %% ../nbs/utils.ipynb 22
 def method(dispatch_fn, dispatch_key=None):
     def apply_decorator(fn):
         if dispatch_key is None:
@@ -111,7 +112,7 @@ def method(dispatch_fn, dispatch_key=None):
         return dispatch_fn
     return apply_decorator
 
-# %% ../nbs/utils.ipynb 21
+# %% ../nbs/utils.ipynb 24
 @multi
 def area(shape):
     return shape.get('type')
@@ -128,13 +129,13 @@ def area(circle):
 def area(unknown_shape):
     raise Exception("Can't calculate the area of this shape")
 
-# %% ../nbs/utils.ipynb 22
+# %% ../nbs/utils.ipynb 25
 fastcore.test.test_eq(area({'type': 'square', 'width': 1, 'height': 1}), 1)
 fastcore.test.test_close(area({'type': 'circle', 'radius': 0.5}), 0.7853975)
 with fastcore.test.ExceptionExpected():
     area({'type': 'rhombus'})
 
-# %% ../nbs/utils.ipynb 24
+# %% ../nbs/utils.ipynb 27
 def string_to_tuple(string):
     """Convert a string containing only integers and dashes to a tuple of
     integers in reverse order."""
