@@ -211,6 +211,10 @@ class MarkovChain:
         self.transparency_func = self.kwargs.get(
             "transparency_func", lambda p: p)
 
+        # Additional config options
+        self.self_arrows = self.kwargs.get("self_arrows", True)
+        self.n_columns = self.kwargs.get('n_columns')
+
     def set_node_centers(self):
         """
             Spread the nodes evenly around in a circle using Euler's formula
@@ -239,6 +243,23 @@ class MarkovChain:
         # Scale by n to have more room
         self.node_centers = unit_circle_coords * n
 
+        # For legibility, we use n below
+        n = self.n_states
+
+        # generate the evenly spaced coords on the unit grid with n_columns
+        n_columns = self.n_columns
+        n_rows = n // n_columns
+        grid_coords = np.vstack([[x - n_columns/4, n_rows - 1 - y]
+                                 for x in range(n_columns)
+                                 for y in range(n_rows)])
+
+        self.figsize = (n*2+4, n*2+4)
+        self.xlim = (-1*(n+2), n+2)
+        self.ylim = (-2, n*2+2)
+
+        # Scale by n to have more room
+        self.node_centers = grid_coords * n
+
     def build_network(self):
         """
         Loops through the matrix, add the nodes
@@ -252,9 +273,9 @@ class MarkovChain:
                            self.labels[i],
                            **{**self.kwargs,
                               "facecolor": (self.node_facecolor
-                                                 if isinstance(self.node_facecolor,
-                                                               str)
-                                                 else self.node_facecolor[i])
+                                            if isinstance(self.node_facecolor,
+                                                          str)
+                                            else self.node_facecolor[i])
                               }
                            )
                       for i in range(self.n_states)]
@@ -312,6 +333,31 @@ class MarkovChain:
             head_width=head_width,
             length_includes_head=True
         )
+
+        # Check if arrow overlaps any other nodes on the way
+        # Use curved arrow instead
+        if ((node1.x == node2.x) and
+            np.any([((center[0] == node1.x)
+                     and (((center[1] > node1.y)
+                           and (center[1] < node2.y))
+                          or ((center[1] < node1.y)
+                              and (center[1] > node2.y))))
+                    for center in self.node_centers])):
+            style=mpatches.ArrowStyle('simple',
+                                      head_length=2*head_width,
+                                      head_width=head_width,
+                                      tail_width=width)
+            arrow = mpatches.FancyArrowPatch(
+                
+                posA=(x_start + x_offset, y_start + y_offset),
+                posB=(x_start + x_offset + dx, y_start + y_offset + dy),
+                shrinkA=0, shrinkB=0,
+                arrowstyle=style,
+                mutation_scale=1,
+                connectionstyle="arc3, rad=0.4")
+            arrow.set_linewidth(0.2)
+
+        
         p = PatchCollection(
             [arrow],
             edgecolor=self.arrow_edgecolor,
@@ -348,7 +394,7 @@ class MarkovChain:
         for i in range(self.M.shape[0]):
             for j in range(self.M.shape[1]):
                 # self loops
-                if i == j and self.M[i, i] > 0:
+                if self.self_arrows and i == j and self.M[i, i] > 0:
                     self.nodes[i].add_self_loop(ax,
                                                 prob=self.M[i, j],
                                                 direction='up' if self.nodes[i].y >= 0 else 'down',
@@ -356,7 +402,7 @@ class MarkovChain:
                                                 percentages=self.percentages)
 
                 # directed arrows
-                elif self.M[i, j] > 0:
+                elif self.M[i, j] > 0 and i!=j:
                     self.add_arrow(ax,
                                    self.nodes[i],
                                    self.nodes[j],

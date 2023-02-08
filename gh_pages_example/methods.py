@@ -6,9 +6,9 @@ __all__ = ['T_type', 'Z', 'sector_strategies', 'allowed_sectors', 'n_players', '
            'expected3', 'expected4', 'expected5', 'expected6', 'profiles_filtered', 'result1_sum', 'result2_sum',
            'result3_sum', 'payoffs', 'β', 'result', 'result_sums', 'S', 'matrix_inds', 'n_models', 'M',
            'fermi_learning', 'fixation_rate', 'fixation_rate_stable', 'ModelTypeEGT', 'build_transition_matrix',
-           'find_ergodic_distribution', 'markov_chain', 'sample_profile', 'create_recurrent_states', 'valid_transition',
-           'compute_profile_dist', 'compute_success', 'vals', 'infer_n_models', 'compute_success_analytical',
-           'payoffs_encanacao_2016']
+           'find_ergodic_distribution', 'calculate_stationary_distribution', 'calculate_sd_helper', 'markov_chain',
+           'sample_profile', 'create_recurrent_states', 'valid_transition', 'compute_profile_dist', 'compute_success',
+           'vals', 'infer_n_models', 'compute_success_analytical', 'payoffs_encanacao_2016']
 
 # %% ../nbs/01_methods.ipynb 1
 from .utils import *
@@ -19,12 +19,15 @@ import collections
 import functools
 import math
 import typing
+from typing import Optional, List, Generator, Union, Callable
+from warnings import warn
 
 import fastcore.test
 from nbdev.showdoc import *
 import numpy as np
 import nptyping
-
+from scipy.linalg import schur, eigvals
+from scipy.sparse import csr_matrix, csc_matrix
 
 # %% ../nbs/01_methods.ipynb 10
 def fermi_learning(fitnessA: nptyping.NDArray,  # fitness of strategy A
@@ -53,6 +56,10 @@ def fixation_rate(Tplus: T_type,  # A list of NDarrays, one array (of size n_mod
                 axis=0,
                 keepdims=False)
          + 1)**-1
+    # The fixation rate may be very close to 0. Innacuracies with floats
+    # may mean that we run into issues later on. We assume the fixation rate
+    # never drops below 1e-10.
+    ρ = np.maximum(ρ, 1e-10)
     return ρ
 
 
@@ -85,6 +92,10 @@ def fixation_rate_stable(ΠA: list,  # Average payoffs for the strategy A they c
                 axis=0,
                 keepdims=False)
          + 1)**-1
+    # The fixation rate may be very close to 0. Innacuracies with floats
+    # may mean that we run into issues later on. We assume the fixation rate
+    # never drops below 1e-10.
+    ρ = np.maximum(ρ, 1e-10)
     return ρ
 
 @method(fixation_rate_stable, "cheap")
@@ -106,10 +117,14 @@ def fixation_rate_stable(ΠA: list,  # Average payoffs for the strategy A they c
                 axis=0,
                 keepdims=False)
          + 1)**-1
+    # The fixation rate may be very close to 0. Innacuracies with floats
+    # may mean that we run into issues later on. We assume the fixation rate
+    # never drops below 1e-10.
+    ρ = np.maximum(ρ, 1e-10)
     return ρ
 
 
-# %% ../nbs/01_methods.ipynb 59
+# %% ../nbs/01_methods.ipynb 60
 class ModelTypeEGT():
     """This is the schema for an Evolutionary Game Theory model.
 
@@ -127,7 +142,7 @@ class ModelTypeEGT():
         pass
 
 
-# %% ../nbs/01_methods.ipynb 61
+# %% ../nbs/01_methods.ipynb 62
 @multi
 def build_transition_matrix(models: dict  # A dictionary that contains the parameters in `ModelTypeEGT`
                             ):
@@ -169,7 +184,7 @@ def build_transition_matrix(models: dict  # A dictionary that contains the param
     return {**models, "transition_matrix": M}
 
 
-# %% ../nbs/01_methods.ipynb 62
+# %% ../nbs/01_methods.ipynb 63
 @method(build_transition_matrix, 'unstable')
 def build_transition_matrix(models: dict  # A dictionary that contains the parameters in `ModelTypeEGT`
                             ):
@@ -203,7 +218,7 @@ def build_transition_matrix(models: dict  # A dictionary that contains the param
     return {**models, "transition_matrix": M}
 
 
-# %% ../nbs/01_methods.ipynb 83
+# %% ../nbs/01_methods.ipynb 84
 def find_ergodic_distribution(models: dict  # A dictionary that contains the parameters in `ModelTypeEGT`
                               ):
     """Find the ergodic distribution of a markov chain with the
@@ -223,7 +238,173 @@ def find_ergodic_distribution(models: dict  # A dictionary that contains the par
     return {**models, 'ergodic': ergodic}
 
 
-# %% ../nbs/01_methods.ipynb 95
+# %% ../nbs/01_methods.ipynb 86
+@multi
+def calculate_stationary_distribution(transition_matrix: Union[np.ndarray, csr_matrix, csc_matrix],
+                                      method=None):
+    """A multimethod for calculating the stationary distribution of different
+    types of matrices."""
+    return method
+
+@method(calculate_stationary_distribution)
+def calculate_stationary_distribution(transition_matrix: Union[np.ndarray, csr_matrix, csc_matrix], # A single 2D transition matrix or a 3D array containing a stack of transition matrices
+                                      method=None # The method to use to find the statonary distribution, the default approach relies on using `numpy.linalg.eig` which is not recommended for non-hermitian matrices. Use "shcur" if matrix is non-hermitian.
+                                      ) -> np.ndarray:
+    """
+    Calculates stationary distribution from a transition matrix of Markov chain.
+
+    The use of this function is not recommended if the matrix is non-Hermitian. Please use
+    calculate_stationary_distribution_non_hermitian instead in this case.
+
+    The stationary distribution is the normalized eigenvector associated with the eigenvalue 1
+
+    Parameters
+    ----------
+    transition_matrix : Union[numpy.ndarray, scipy.sparse.csr_matrix, scipy.sparse.csc_matrix]
+        A 2 dimensional transition matrix
+
+    Returns
+    -------
+    numpy.ndarray
+        A 1-dimensional vector containing the stationary distribution
+
+    See Also
+    --------
+    egttools.utils.calculate_stationary_distribution_non_hermitian
+
+    """
+    if (type(transition_matrix) == csr_matrix) or (type(transition_matrix) == csc_matrix):
+        tmp = transition_matrix.toarray()
+    else:
+        tmp = transition_matrix
+        
+    if np.ndim(transition_matrix)==2:
+        tmp = transition_matrix[None, ...]
+    
+    # Check if there is any transition with value 1 - this would mean that the game is degenerate
+    if np.isclose(tmp, 1., atol=1e-11).any():
+        warn(
+            "Some of the entries in the transition matrix are close to 1 (with a tolerance of 1e-11). "
+            "This could result in more than one eigenvalue of magnitute 1 "
+            "(the Markov Chain is degenerate), so please be careful when analysing the results.", RuntimeWarning)
+        
+    # `numpy.linalg.eig` returns the right-handed eigenvectors so we need to tranpose our transition matrices first.
+    tmp = tmp.transpose(0, 2, 1)
+
+    # calculate stationary distributions using eigenvalues and eigenvectors
+    eigenvalues, eigenvectors = np.linalg.eig(tmp)
+    
+    # look for the first element closest to 1 in the list of eigenvalues
+    index_stationary = (np.arange(len(eigenvalues)),
+                        np.argmin(np.abs(eigenvalues - 1.0), axis=-1))
+    mask_stationary = np.zeros_like(eigenvalues, dtype=bool)
+    mask_stationary[index_stationary] = True
+    sd = np.abs(eigenvectors.transpose(0, 2, 1)[mask_stationary].real)
+    return sd / np.sum(sd, axis=-1)[:, None]  # normalize
+
+
+# %% ../nbs/01_methods.ipynb 87
+@method(calculate_stationary_distribution, "schur")
+def calculate_stationary_distribution(transition_matrix: Union[np.ndarray, csr_matrix, csc_matrix], # A single 2D transition matrix or a 3D array containing a stack of transition matrices
+                                      method=None # The method to use to find the statonary distribution, the default approach relies on using `numpy.linalg.eig` which is not recommended for non-hermitian matrices. Use "shcur" if matrix is non-hermitian.
+                                      ) -> np.ndarray:
+    """
+    Calculates stationary distribution from a transition matrix of Markov chain.
+
+    The stationary distribution is the normalized eigenvector associated with the eigenvalue 1
+
+    Parameters
+    ----------
+    transition_matrix : Union[numpy.ndarray, scipy.sparse.csr_matrix, scipy.sparse.csc_matrix]
+        A 2 dimensional transition matrix
+
+    Returns
+    -------
+    numpy.ndarray
+        A 1-dimensional vector containing the stationary distribution
+
+    See Also
+    --------
+    egttools.utils.calculate_stationary_distribution_non_hermitian
+
+    """
+    if (type(transition_matrix) == csr_matrix) or (type(transition_matrix) == csc_matrix):
+        tmp = transition_matrix.toarray()
+    else:
+        tmp = transition_matrix
+        
+    if np.ndim(transition_matrix)==2:
+        tmp = transition_matrix[None, ...]
+    
+    # Check if there is any transition with value 1 - this would mean that the game is degenerate
+    if np.isclose(tmp, 1., atol=1e-11).any():
+        warn(
+            "Some of the entries in the transition matrix are close to 1 (with a tolerance of 1e-11). "
+            "This could result in more than one eigenvalue of magnitute 1 "
+            "(the Markov Chain is degenerate), so please be careful when analysing the results.", RuntimeWarning)
+
+    # calculate stationary distributions using eigenvalues and eigenvectors
+    schur_results = [schur(m) for m in tmp]
+    eigenvectors = np.array([r[1] for r in schur_results]).real
+    eigenvalues = np.array([eigvals(r[0]) for r in schur_results]).real
+    # look for the first element closest to 1 in the list of eigenvalues
+    index_stationary = (np.arange(len(eigenvalues)),
+                        np.argmin(np.abs(eigenvalues - 1.0), axis=-1))
+    mask_stationary = np.zeros_like(eigenvalues, dtype=bool)
+    mask_stationary[index_stationary] = True
+    sd = np.abs(eigenvectors[mask_stationary].real)
+    return sd / np.sum(sd, axis=-1)[:, None]  # normalize
+
+
+# %% ../nbs/01_methods.ipynb 89
+@method(calculate_stationary_distribution, "quantecon")
+def calculate_stationary_distribution(transition_matrix: Union[np.ndarray, csr_matrix, csc_matrix], # A single 2D transition matrix or a 3D array containing a stack of transition matrices
+                                      method=None # The method to use to find the statonary distribution, the default approach relies on using `numpy.linalg.eig` which is not recommended for non-hermitian matrices. Use "shcur" if matrix is non-hermitian.
+                                      ) -> np.ndarray:
+    """
+    Calculates stationary distribution from a transition matrix of Markov chain.
+
+    The stationary distribution is the normalized eigenvector associated with the eigenvalue 1
+
+    Parameters
+    ----------
+    transition_matrix : Union[numpy.ndarray, scipy.sparse.csr_matrix, scipy.sparse.csc_matrix]
+        A 2 dimensional transition matrix
+
+    Returns
+    -------
+    numpy.ndarray
+        A 1-dimensional vector containing the stationary distribution
+
+    See Also
+    --------
+    egttools.utils.calculate_stationary_distribution_non_hermitian
+
+    """
+    if (type(transition_matrix) == csr_matrix) or (type(transition_matrix) == csc_matrix):
+        tmp = transition_matrix.toarray()
+    else:
+        tmp = transition_matrix
+        
+    if np.ndim(transition_matrix)==2:
+        tmp = transition_matrix[None, ...]
+    
+    # Check if there is any transition with value 1 - this would mean that the game is degenerate
+    if np.isclose(tmp, 1., atol=1e-11).any():
+        warn(
+            "Some of the entries in the transition matrix are close to 1 (with a tolerance of 1e-11). "
+            "This could result in more than one eigenvalue of magnitute 1 "
+            "(the Markov Chain is degenerate), so please be careful when analysing the results.", RuntimeWarning)
+    return np.array([gth_solve(p) for p in tmp])
+
+
+# %% ../nbs/01_methods.ipynb 90
+def calculate_sd_helper(models):
+    P =  models['transition_matrix']
+    sd = calculate_stationary_distribution(P, method=models.get('sd-method'))
+    return {**models, "ergodic": sd }
+
+# %% ../nbs/01_methods.ipynb 113
 def markov_chain(models: dict  # A dictionary that contains the parameters in `ModelTypeEGT`
                  ):
     """Find the ergodic distribution of the evolutionary
@@ -233,7 +414,7 @@ def markov_chain(models: dict  # A dictionary that contains the parameters in `M
                         find_ergodic_distribution)
 
 
-# %% ../nbs/01_methods.ipynb 108
+# %% ../nbs/01_methods.ipynb 126
 @multi
 def sample_profile(models):
     return models.get('sample_profile_key')
@@ -342,7 +523,7 @@ def sample_profile(models):
     return likelihood
 
 
-# %% ../nbs/01_methods.ipynb 113
+# %% ../nbs/01_methods.ipynb 131
 Z = {"S3": 10, "S2": 10, "S1": 10}
 sector_strategies = {"S3": [5, 6],
                      "S2": [3, 4],
@@ -400,7 +581,7 @@ fastcore.test.test_eq(result5, expected)
 fastcore.test.test_eq(result6, expected)
 
 
-# %% ../nbs/01_methods.ipynb 116
+# %% ../nbs/01_methods.ipynb 134
 Z = {"S3": 10, "S2": 10, "S1": 10}
 sector_strategies = {"S3": [5, 6],
                      "S2": [3, 4],
@@ -471,7 +652,7 @@ with fastcore.test.ExceptionExpected(ex=KeyError):
                     "profile": "3-2-1"})
 
 
-# %% ../nbs/01_methods.ipynb 119
+# %% ../nbs/01_methods.ipynb 137
 Z = {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -545,7 +726,7 @@ fastcore.test.test_eq(result5, expected5)
 fastcore.test.test_eq(result6, expected6)
 
 
-# %% ../nbs/01_methods.ipynb 122
+# %% ../nbs/01_methods.ipynb 140
 Z = {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -629,7 +810,7 @@ fastcore.test.test_eq(result5, expected5)
 fastcore.test.test_eq(result6, expected6)
 
 
-# %% ../nbs/01_methods.ipynb 126
+# %% ../nbs/01_methods.ipynb 144
 def create_recurrent_states(models):
     """Create all recurrent-states for the set of models."""
     sector_strategies = models['sector_strategies']
@@ -642,7 +823,7 @@ def create_recurrent_states(models):
     return states
 
 
-# %% ../nbs/01_methods.ipynb 131
+# %% ../nbs/01_methods.ipynb 149
 def valid_transition(ind1: str,  # The index of the current state, expressed in the form "{strategy_code}-{strategy_code}-{strategy_code}"
                      ind2: str,  # The index of the next state, expressed in the same form as `ind1`
                      ) -> bool:  # True if the transition is valid, false otherwise
@@ -655,7 +836,7 @@ def valid_transition(ind1: str,  # The index of the current state, expressed in 
     return valid
 
 
-# %% ../nbs/01_methods.ipynb 133
+# %% ../nbs/01_methods.ipynb 151
 fastcore.test.test_eq(valid_transition("1-1-1", "2-1-1"), True)
 fastcore.test.test_eq(valid_transition("1-1-1", "2-1-2"), False)
 fastcore.test.test_eq(valid_transition("1-1-1", "0-0-0"), False)
@@ -664,7 +845,7 @@ fastcore.test.test_eq(valid_transition("1-1-1", "22-1-3"), False)
 fastcore.test.test_eq(valid_transition("1-1-1", "1-1-1"), False)
 
 
-# %% ../nbs/01_methods.ipynb 135
+# %% ../nbs/01_methods.ipynb 153
 @multi
 def compute_profile_dist(models):
     """Compute the probability distribution of the relevant profiles."""
@@ -691,7 +872,7 @@ def compute_profile_dist(models):
     return profile_distribution
 
 
-# %% ../nbs/01_methods.ipynb 136
+# %% ../nbs/01_methods.ipynb 154
 @method(compute_profile_dist, 'multi-player-symmetric')
 def compute_profile_dist(models):
     """Compute the probability distribution of the relevant profiles - we have
@@ -734,7 +915,7 @@ def compute_profile_dist(models):
     return profile_distribution
 
 
-# %% ../nbs/01_methods.ipynb 140
+# %% ../nbs/01_methods.ipynb 158
 Z = {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -827,7 +1008,7 @@ for likelihoods_by_player in result1.values():
 fastcore.test.test_eq(result2_sum, 1)
 
 
-# %% ../nbs/01_methods.ipynb 143
+# %% ../nbs/01_methods.ipynb 161
 Z = {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1006,7 +1187,7 @@ for profile in profiles_filtered:
                                  expected2[profile][player])
 
 
-# %% ../nbs/01_methods.ipynb 145
+# %% ../nbs/01_methods.ipynb 163
 @multi
 def compute_success(models):
     """Compute the success of the two strategies under consideration."""
@@ -1106,7 +1287,7 @@ def compute_success(models):
     return ΠA, ΠB
 
 
-# %% ../nbs/01_methods.ipynb 150
+# %% ../nbs/01_methods.ipynb 168
 Z = {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1150,7 +1331,7 @@ for result, expected in zip(result1[1], expected1[1]):
     fastcore.test.test_close(result, expected)
 
 
-# %% ../nbs/01_methods.ipynb 153
+# %% ../nbs/01_methods.ipynb 171
 Z = {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1223,7 +1404,7 @@ for result, expected in zip(result2[1], expected2[1]):
     fastcore.test.test_close(result, expected)
 
 
-# %% ../nbs/01_methods.ipynb 156
+# %% ../nbs/01_methods.ipynb 174
 Z = {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1301,13 +1482,13 @@ for result, expected in zip(result2[1], expected2[1]):
     fastcore.test.test_close(result, expected)
 
 
-# %% ../nbs/01_methods.ipynb 158
+# %% ../nbs/01_methods.ipynb 176
 def vals(d: dict):
     "Return the values of a dictionary."
     return d.values()
 
 
-# %% ../nbs/01_methods.ipynb 159
+# %% ../nbs/01_methods.ipynb 177
 def infer_n_models(models):
     "Infer the number of models from the model payoffs."
     try:
@@ -1328,7 +1509,7 @@ def infer_n_models(models):
     return n_models
 
 
-# %% ../nbs/01_methods.ipynb 164
+# %% ../nbs/01_methods.ipynb 182
 @method(build_transition_matrix, 'multiple-populations')
 def build_transition_matrix(models: dict  # A dictionary that contains the parameters in `ModelTypeEGTMultiple`
                             ):
@@ -1365,7 +1546,7 @@ def build_transition_matrix(models: dict  # A dictionary that contains the param
             'n_models': n_models}
 
 
-# %% ../nbs/01_methods.ipynb 170
+# %% ../nbs/01_methods.ipynb 188
 β = 1
 Z = {"S1": 50, "S2": 50, "S3": 50}
 allowed_sectors = {"P3": ["S3"],
@@ -1399,7 +1580,7 @@ result_sums = np.sum(result, axis=-1)
 fastcore.test.test_close(result_sums, 1)
 
 
-# %% ../nbs/01_methods.ipynb 174
+# %% ../nbs/01_methods.ipynb 192
 @multi
 def compute_success_analytical(models):
     return models.get('success_analytical_derivation')
@@ -1469,7 +1650,7 @@ def compute_success_analytical(models):
     return SA, SB
 
 
-# %% ../nbs/01_methods.ipynb 175
+# %% ../nbs/01_methods.ipynb 193
 Z = {"S2": 10, "S1": 10}
 β = 1
 sector_strategies = {"S2": [3, 4],
@@ -1539,7 +1720,7 @@ for row_ind in range(M.shape[2]):
                                      result[model_ind, col_ind, row_ind])
 
 
-# %% ../nbs/01_methods.ipynb 178
+# %% ../nbs/01_methods.ipynb 196
 @method(compute_success_analytical, '2sector2strategy3player')
 def compute_success_analytical(models):
     """Compute the success of each strategy involved in a transition for
@@ -1605,7 +1786,7 @@ def compute_success_analytical(models):
     return SA, SB
 
 
-# %% ../nbs/01_methods.ipynb 179
+# %% ../nbs/01_methods.ipynb 197
 Z = {"S2": 10, "S1": 10}
 β = 1
 sector_strategies = {"S2": [3, 4],
@@ -1675,7 +1856,7 @@ for row_ind in range(M.shape[2]):
             fastcore.test.test_close(M[model_ind, col_ind, row_ind],
                                      result[model_ind, col_ind, row_ind])
 
-# %% ../nbs/01_methods.ipynb 180
+# %% ../nbs/01_methods.ipynb 198
 Z = {"S2": 10, "S1": 10}
 β = 1
 sector_strategies = {"S2": [4, 5],
@@ -1745,7 +1926,7 @@ for row_ind in range(M.shape[2]):
             fastcore.test.test_close(M[model_ind, col_ind, row_ind],
                                      result[model_ind, col_ind, row_ind])
 
-# %% ../nbs/01_methods.ipynb 183
+# %% ../nbs/01_methods.ipynb 201
 def payoffs_encanacao_2016(models):
     names = ['b_r', 'b_s', 'c_s', 'c_t', 'σ']
     b_r, b_s, c_s, c_t, σ = [models[k] for k in names]
@@ -1804,7 +1985,7 @@ def payoffs_encanacao_2016(models):
     return {**models, "payoffs": payoffs}
 
 
-# %% ../nbs/01_methods.ipynb 184
+# %% ../nbs/01_methods.ipynb 202
 Z = {"S3": 50, "S2": 50, "S1": 50}
 β = 0.08
 sector_strategies = {"S3": [4, 5],
