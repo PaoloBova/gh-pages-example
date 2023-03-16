@@ -1,0 +1,126 @@
+---
+title: Home
+css: index.css
+image: https:/paolobova.github.io/gh-pages-example/images/placeholder.png
+toc: false
+page-layout: custom
+section-divs: false
+description: Demos, analyses, writing, and documentation for Paolo Bova's Phd work.
+---
+
+# Phd Showcase
+
+Find out about my latest research in modelling AI Governance
+
+:::  {.panel-tabset}
+
+## Regulatory Market
+::: {#fig-display layout-ncol=2}
+
+[![Vigilant Incentives](images/Attempt2/heatmap-vi-welfare-phi0.5-1.png){#fig-vi}](https:/paolobova.github.io/gh-pages-example/Analysis/analysis_dsair.html)
+
+[![Government Regulation](images/Attempt2/heatmap-gov-welfare-phi0.5-1.png){#fig-gov}](https:/paolobova.github.io/gh-pages-example/Analysis/analysis_dsair.html)
+
+Regulatory Markets with Vigilant Incentives can lead to more efficient regulation under uncertainty
+:::
+## DSAIR
+:::
+
+
+Enclose the inputs in a sidebar panel and the outputs in a tabset panel (click the "Code" button at top right to see the full source code):
+
+```{ojs}
+//| echo: false
+//| panel: sidebar
+viewof bill_length_min = Inputs.range(
+  [32, 50], 
+  {value: 35, step: 1, label: "Bill length (min):"}
+)
+viewof islands = Inputs.checkbox(
+  ["Torgersen", "Biscoe", "Dream"], 
+  { value: ["Torgersen", "Biscoe"], 
+    label: "Islands:"
+  }
+)
+```
+
+::: {#penguins-tabset .panel-tabset .ojs-track-layout}
+## Plot
+
+```{ojs}
+//| echo: false
+Plot.rectY(filtered, 
+  Plot.binX(
+    {y: "count"}, 
+    {x: "body_mass_g", fill: "species", thresholds: 20}
+  ))
+  .plot({
+    facet: {
+      data: filtered,
+      x: "sex",
+      y: "species",
+      marginRight: 80
+    },
+    marks: [
+      Plot.frame(),
+    ]
+  }
+)
+```
+
+```{python}
+import pandas as pd
+import numpy as np
+from gh_pages_example.model_utils import *
+
+models = model_builder({"x": np.arange(0, 10, 1),
+          "y": np.arange(0, 10, 1),})
+models['z'] = models['x'] * models['y']
+df = pd.DataFrame(models)
+df
+ojs_define(df=df)
+```
+
+<!-- ```{ojs}
+Plot = await import("https://esm.sh/@observablehq/plot");
+``` -->
+
+```{ojs}
+ Plot.line(df, {x: "x", y: "y"}).plot()
+```
+
+```{ojs}
+
+Plot.plot({
+  height: 640,
+  color: {
+    scheme: "bupu",
+    type: "symlog"
+  },
+  marks: [
+    Plot.line(df, {x: "x", y: "y"}),
+    // Plot.contour(df.z, {width: 11, height: 11})
+  ]
+})
+
+```
+
+## Data
+
+```{ojs}
+//| echo: false
+Inputs.table(filtered)
+```
+:::
+
+Read and filter the data based on the user's inputs:
+
+```{ojs}
+//| echo: false
+data = FileAttachment("penguins.csv").csv({typed: true})
+filtered = data.filter(function(penguin) {
+  return bill_length_min < penguin.bill_length_mm &&
+         islands.includes(penguin.island);
+})
+```
+
