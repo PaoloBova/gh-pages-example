@@ -7,7 +7,7 @@ format:
   html:
     theme:
       light: cerulean
-      dark: solar
+      dark: slate
     css: styles.css
     toc: true
     toc-depth: 4
@@ -16,30 +16,30 @@ website:
   twitter-card: true
   open-graph: true
   repo-actions: [issue]
-  navbar:
-    background: primary
-    search: true
-    collapse-below: lg
-    left:
-      - text: "Research"
-        href: blog/index.qmd
-      - text: "Blog"
-        href: blog/index.qmd
-    right:
-      - icon: github
-        href: "https://github.com/paolobova/gh-pages-example"
-        aria-label: Github respository
-  sidebar:
-    style: "docked"
-    background: "dark"
-    contents:
-      - auto: "/*.ipynb"
-      - section: Methods
-        contents: "Methods/*.ipynb*"
-      - section: Payoffs
-        contents: "Payoffs/*.ipynb*"
-      - section: Analysis
-        contents: "Analysis/*.ipynb"
+  # navbar:
+  #   background: primary
+  #   search: true
+  #   collapse-below: lg
+  #   left:
+  #     - text: "Research"
+  #       href: blog/index.qmd
+  #     - text: "Blog"
+  #       href: blog/index.qmd
+  #   right:
+  #     - icon: github
+  #       href: "https://github.com/paolobova/gh-pages-example"
+  #       aria-label: Github respository
+  # sidebar:
+  #   style: "docked"
+  #   background: "dark"
+  #   contents:
+  #     - auto: "/*.ipynb"
+  #     - section: Methods
+  #       contents: "Methods/*.ipynb*"
+  #     - section: Payoffs
+  #       contents: "Payoffs/*.ipynb*"
+  #     - section: Analysis
+  #       contents: "Analysis/*.ipynb"
 
 
 metadata-files: [nbdev.yml]

@@ -6,11 +6,18 @@ __all__ = ['valid_dtypes', 'build_DSAIR', 'payoffs_sr', 'payoffs_sr_pfo_extensio
 # %% ../nbs/Payoffs/02_payoffs1.ipynb 2
 from nbdev.showdoc import *
 from fastcore.test import test_eq, test_close
-from .model_utils import *
+import collections
+import functools
 from .utils import *
 from .types import *
+from .methods import *
+from .model_utils import *
+import itertools
+import math
 import typing
 
+import fastcore.test
+import more_itertools
 import numpy as np
 import nptyping
 
@@ -397,6 +404,7 @@ def build_payoffs(models: dict):
         payoffs_state = {**payoffs_state,
                          'strategy_counts': strategy_counts}
         profile_models = {**models,
+                          "strategy_profile": profile,
                           "payoffs_state": payoffs_state,
                           "payoffs_key": profile_payoffs_key}
         profile_payoffs = thread_macro(profile_models,
@@ -507,7 +515,9 @@ def build_payoffs(models: dict):
                      (get, "ergodic"))[0]
     u = np.array([[u[s][f"{i+1}"] for i in range(len(u[s]))]
                   for s in state_actions])
-    payoffs = np.dot(v, u)
+    for _ in range(v.ndim, u.ndim):
+        v = v[:, None]
+    payoffs = np.sum(v * u, axis=0)
     profile_payoffs = {f"{i+1}": pi for i, pi in enumerate(payoffs)}
     return {**models, "profile_payoffs": profile_payoffs}
 
@@ -537,12 +547,31 @@ def build_payoffs(models: dict):
     v = (1 - d) * v0 * np.linalg.inv(np.eye(M.shape) - d * M)
     u = np.array([[u[s][f"{i+1}"] for i in range(len(u[s]))]
                   for s in state_actions])
-    payoffs = np.dot(v, u)
+    for _ in range(v.ndim, u.ndim):
+        v = v[:, None]
+    payoffs = np.sum(v * u, axis=0)
     profile_payoffs = {f"{i+1}": pi for i, pi in enumerate(payoffs)}
     return {**models, "profile_payoffs": profile_payoffs}
 
 
-# %% ../nbs/Payoffs/03_payoffs2.ipynb 29
+# %% ../nbs/Payoffs/03_payoffs2.ipynb 26
+@method(build_payoffs, 'vasconcelos_2014_flow')
+def build_payoffs(models: dict):
+    names = ['payoffs_state', 'c', 'T', 'b_r', 'b_p', 'r', 'g']
+    payoffs_state, c, T, b_r, b_p, r, g = [models[k] for k in names]
+    strategy_counts = payoffs_state['strategy_counts']
+    state = payoffs_state['state']
+    reward_bonus = g if state=='1' else 1
+    n_r = strategy_counts.get("2", 0)
+    n_p = strategy_counts.get("4", 0)
+    risk = r * (n_r * c * b_r + n_p * c * b_p < T)
+    payoffs = {"1": (1 - risk) * b_r * reward_bonus,  # rich_free_rider
+               "2": (1 - risk) * c * b_r * reward_bonus,  # rich_contributor
+               "3": (1 - risk) * b_p * reward_bonus,  # poor_free_rider
+               "4": (1 - risk) * c * b_p * reward_bonus}  # poor_contributor
+    return {**models, "flow_payoffs": payoffs}
+
+# %% ../nbs/Payoffs/03_payoffs2.ipynb 30
 @multi
 def state_transition(models):
     "Compute the likelihood of the given state_transition."
@@ -580,7 +609,7 @@ def state_transition(models):
         transition_likelihood = 0
     return transition_likelihood
 
-# %% ../nbs/Payoffs/03_payoffs2.ipynb 30
+# %% ../nbs/Payoffs/03_payoffs2.ipynb 31
 def build_state_transitions(models):
     state_actions = models['state_actions']
     n_states = models['n_states']
@@ -594,7 +623,7 @@ def build_state_transitions(models):
             state_transitions[state_action][next_state] = likelihood
     return {**models, "state_transitions": state_transitions}
 
-# %% ../nbs/Payoffs/03_payoffs2.ipynb 35
+# %% ../nbs/Payoffs/03_payoffs2.ipynb 36
 @multi
 def build_strategy(models):
     "Build the desired strategy"
@@ -696,7 +725,7 @@ def build_strategy(models):
         strategy = {"A3": 0.05, "A4": 0.95}
     return strategy
 
-# %% ../nbs/Payoffs/03_payoffs2.ipynb 36
+# %% ../nbs/Payoffs/03_payoffs2.ipynb 37
 def build_strategies(models):
     "Build a dictionary containing the specified strategies in `models`"
     state_actions, strategy_keys = [models[k] for k in ["state_actions",

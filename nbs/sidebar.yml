@@ -1,23 +1,30 @@
 website:
   sidebar:
     contents:
-      - index.ipynb
+      - index.qmd
       - 01_methods.ipynb
       - 03_analytical_conditions.ipynb
       - data_utils.ipynb
+      - index2.qmd
+      - model_utils.ipynb
+      - models.ipynb
       - plots_utils.ipynb
       - references.ipynb
+      - subgame.qmd
       - types.ipynb
       - utils.ipynb
       - section: Analysis
         contents:
           - Analysis/index.qmd
           - Analysis/10_analysis_dsair.ipynb
+          - Analysis/11_analysis_regulator_markets.ipynb
+          - Analysis/12_analysis_stochasicgames.ipynb
       - section: Payoffs
         contents:
           - Payoffs/index.qmd
           - Payoffs/02_payoffs1.ipynb
           - Payoffs/03_payoffs2.ipynb
+          - Payoffs/04_payoffs3.ipynb
       - section: blog
         contents:
           - blog/index.qmd

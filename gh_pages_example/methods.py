@@ -95,7 +95,7 @@ def fixation_rate_stable(ΠA: list,  # Average payoffs for the strategy A they c
     # The fixation rate may be very close to 0. Innacuracies with floats
     # may mean that we run into issues later on. We assume the fixation rate
     # never drops below 1e-10.
-    ρ = np.maximum(ρ, 1e-10)
+#     ρ = np.maximum(ρ, 1e-15)
     return ρ
 
 @method(fixation_rate_stable, "cheap")
@@ -120,11 +120,36 @@ def fixation_rate_stable(ΠA: list,  # Average payoffs for the strategy A they c
     # The fixation rate may be very close to 0. Innacuracies with floats
     # may mean that we run into issues later on. We assume the fixation rate
     # never drops below 1e-10.
-    ρ = np.maximum(ρ, 1e-10)
+#     ρ = np.maximum(ρ, 1e-15)
+    return ρ
+
+@method(fixation_rate_stable, "cheap2")
+def fixation_rate_stable(ΠA: list,  # Average payoffs for the strategy A they consider adopting for each number of mutants following A
+                         ΠB: list,  # Average payoffs for the strategy B that the player currently follows for each number of mutants following A
+                         β: Array1D,  # learning rate
+                         method=None, # method to dispatch on
+                         ):
+    """Calculate the likelihood that a mutant B invades population A
+    using a numerically stable method."""
+    fastcore.test.test_eq(len(ΠA), len(ΠB))
+    Z = len(ΠA) + 1
+    # avoid underflow/overflow warnings
+    ρ = (np.sum(2**(np.clip(np.cumsum([-β*(ΠB[j-1] - ΠA[j-1])
+                                          for j in range(1, Z)],
+                                         axis=0),
+                               -500,
+                               500)),  
+                axis=0,
+                keepdims=False)
+         + 1)**-1
+    # The fixation rate may be very close to 0. Innacuracies with floats
+    # may mean that we run into issues later on. We assume the fixation rate
+    # never drops below 1e-10.
+#     ρ = np.maximum(ρ, 1e-15)
     return ρ
 
 
-# %% ../nbs/01_methods.ipynb 60
+# %% ../nbs/01_methods.ipynb 59
 class ModelTypeEGT():
     """This is the schema for an Evolutionary Game Theory model.
 
@@ -142,7 +167,7 @@ class ModelTypeEGT():
         pass
 
 
-# %% ../nbs/01_methods.ipynb 62
+# %% ../nbs/01_methods.ipynb 61
 @multi
 def build_transition_matrix(models: dict  # A dictionary that contains the parameters in `ModelTypeEGT`
                             ):
@@ -184,7 +209,7 @@ def build_transition_matrix(models: dict  # A dictionary that contains the param
     return {**models, "transition_matrix": M}
 
 
-# %% ../nbs/01_methods.ipynb 63
+# %% ../nbs/01_methods.ipynb 62
 @method(build_transition_matrix, 'unstable')
 def build_transition_matrix(models: dict  # A dictionary that contains the parameters in `ModelTypeEGT`
                             ):
@@ -218,7 +243,7 @@ def build_transition_matrix(models: dict  # A dictionary that contains the param
     return {**models, "transition_matrix": M}
 
 
-# %% ../nbs/01_methods.ipynb 84
+# %% ../nbs/01_methods.ipynb 83
 def find_ergodic_distribution(models: dict  # A dictionary that contains the parameters in `ModelTypeEGT`
                               ):
     """Find the ergodic distribution of a markov chain with the
@@ -238,7 +263,7 @@ def find_ergodic_distribution(models: dict  # A dictionary that contains the par
     return {**models, 'ergodic': ergodic}
 
 
-# %% ../nbs/01_methods.ipynb 86
+# %% ../nbs/01_methods.ipynb 85
 @multi
 def calculate_stationary_distribution(transition_matrix: Union[np.ndarray, csr_matrix, csc_matrix],
                                       method=None):
@@ -303,7 +328,7 @@ def calculate_stationary_distribution(transition_matrix: Union[np.ndarray, csr_m
     return sd / np.sum(sd, axis=-1)[:, None]  # normalize
 
 
-# %% ../nbs/01_methods.ipynb 87
+# %% ../nbs/01_methods.ipynb 86
 @method(calculate_stationary_distribution, "schur")
 def calculate_stationary_distribution(transition_matrix: Union[np.ndarray, csr_matrix, csc_matrix], # A single 2D transition matrix or a 3D array containing a stack of transition matrices
                                       method=None # The method to use to find the statonary distribution, the default approach relies on using `numpy.linalg.eig` which is not recommended for non-hermitian matrices. Use "shcur" if matrix is non-hermitian.
@@ -356,7 +381,7 @@ def calculate_stationary_distribution(transition_matrix: Union[np.ndarray, csr_m
     return sd / np.sum(sd, axis=-1)[:, None]  # normalize
 
 
-# %% ../nbs/01_methods.ipynb 88
+# %% ../nbs/01_methods.ipynb 87
 def gth_solve(A, overwrite=False):
     r"""
     This routine computes the stationary distribution of an irreducible
@@ -429,7 +454,7 @@ def gth_solve(A, overwrite=False):
 
     return x
 
-# %% ../nbs/01_methods.ipynb 89
+# %% ../nbs/01_methods.ipynb 88
 @method(calculate_stationary_distribution, "quantecon")
 def calculate_stationary_distribution(transition_matrix: Union[np.ndarray, csr_matrix, csc_matrix], # A single 2D transition matrix or a 3D array containing a stack of transition matrices
                                       method=None # The method to use to find the statonary distribution, the default approach relies on using `numpy.linalg.eig` which is not recommended for non-hermitian matrices. Use "shcur" if matrix is non-hermitian.
@@ -471,13 +496,13 @@ def calculate_stationary_distribution(transition_matrix: Union[np.ndarray, csr_m
     return np.array([gth_solve(p) for p in tmp])
 
 
-# %% ../nbs/01_methods.ipynb 90
+# %% ../nbs/01_methods.ipynb 89
 def calculate_sd_helper(models):
     P =  models['transition_matrix']
     sd = calculate_stationary_distribution(P, method=models.get('sd-method'))
     return {**models, "ergodic": sd }
 
-# %% ../nbs/01_methods.ipynb 113
+# %% ../nbs/01_methods.ipynb 112
 def markov_chain(models: dict  # A dictionary that contains the parameters in `ModelTypeEGT`
                  ):
     """Find the ergodic distribution of the evolutionary
@@ -487,7 +512,7 @@ def markov_chain(models: dict  # A dictionary that contains the parameters in `M
                         find_ergodic_distribution)
 
 
-# %% ../nbs/01_methods.ipynb 126
+# %% ../nbs/01_methods.ipynb 125
 @multi
 def sample_profile(models):
     return models.get('sample_profile_key')
@@ -536,17 +561,16 @@ def sample_profile(models):
     n_sampled_from_affected_sector = 1
     n_mutants_sampled = 1 if chosen_strategy == mutant_strategy else 0
     for i, strategy in enumerate(profile_tuple[::-1]):
-        strategy = int(strategy)  #coerce to integer
         valid_strategy = False
         for sector in allowed_sectors[f"P{i+1}"]:
-            if strategy in sector_strategies[sector]:
+            if strategy in map(int, sector_strategies[sector]):
                 valid_strategy = True
         if not valid_strategy:
-            raise ValueError("""Profile implies a player plays a strategy from
-                             a sector they do not belong to.""")
+            raise ValueError(f"""Profile, {profile}, implies a player plays a
+                             strategy from a sector they do not belong to.""")
         if f"P{i+1}" == chosen_player:
             continue
-        if strategy in sector_strategies[affected_sector]:
+        if strategy in map(int, sector_strategies[affected_sector]):
             if strategy == current_strategy:
                 likelihood *= ((Z[affected_sector]
                                 - (n_sampled_from_affected_sector
@@ -581,7 +605,7 @@ def sample_profile(models):
                                  strategy profiles to this sampling rule.""")
         relevant_sector = [sector
                            for sector in sector_strategies.keys()
-                           if strategy in sector_strategies[sector]]
+                           if strategy in map(int, sector_strategies[sector])]
         if len(relevant_sector) > 1:
             raise ValueError("Each sector must have unique strategy codes")
         elif len(relevant_sector) == 0:
@@ -596,7 +620,7 @@ def sample_profile(models):
     return likelihood
 
 
-# %% ../nbs/01_methods.ipynb 131
+# %% ../nbs/01_methods.ipynb 130
 Z = {"S3": 10, "S2": 10, "S1": 10}
 sector_strategies = {"S3": [5, 6],
                      "S2": [3, 4],
@@ -654,7 +678,7 @@ fastcore.test.test_eq(result5, expected)
 fastcore.test.test_eq(result6, expected)
 
 
-# %% ../nbs/01_methods.ipynb 134
+# %% ../nbs/01_methods.ipynb 133
 Z = {"S3": 10, "S2": 10, "S1": 10}
 sector_strategies = {"S3": [5, 6],
                      "S2": [3, 4],
@@ -725,7 +749,7 @@ with fastcore.test.ExceptionExpected(ex=KeyError):
                     "profile": "3-2-1"})
 
 
-# %% ../nbs/01_methods.ipynb 137
+# %% ../nbs/01_methods.ipynb 136
 Z = {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -799,7 +823,7 @@ fastcore.test.test_eq(result5, expected5)
 fastcore.test.test_eq(result6, expected6)
 
 
-# %% ../nbs/01_methods.ipynb 140
+# %% ../nbs/01_methods.ipynb 139
 Z = {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -883,7 +907,7 @@ fastcore.test.test_eq(result5, expected5)
 fastcore.test.test_eq(result6, expected6)
 
 
-# %% ../nbs/01_methods.ipynb 144
+# %% ../nbs/01_methods.ipynb 143
 def create_recurrent_states(models):
     """Create all recurrent-states for the set of models."""
     sector_strategies = models['sector_strategies']
@@ -896,7 +920,7 @@ def create_recurrent_states(models):
     return states
 
 
-# %% ../nbs/01_methods.ipynb 149
+# %% ../nbs/01_methods.ipynb 148
 def valid_transition(ind1: str,  # The index of the current state, expressed in the form "{strategy_code}-{strategy_code}-{strategy_code}"
                      ind2: str,  # The index of the next state, expressed in the same form as `ind1`
                      ) -> bool:  # True if the transition is valid, false otherwise
@@ -909,7 +933,7 @@ def valid_transition(ind1: str,  # The index of the current state, expressed in 
     return valid
 
 
-# %% ../nbs/01_methods.ipynb 151
+# %% ../nbs/01_methods.ipynb 150
 fastcore.test.test_eq(valid_transition("1-1-1", "2-1-1"), True)
 fastcore.test.test_eq(valid_transition("1-1-1", "2-1-2"), False)
 fastcore.test.test_eq(valid_transition("1-1-1", "0-0-0"), False)
@@ -918,7 +942,7 @@ fastcore.test.test_eq(valid_transition("1-1-1", "22-1-3"), False)
 fastcore.test.test_eq(valid_transition("1-1-1", "1-1-1"), False)
 
 
-# %% ../nbs/01_methods.ipynb 153
+# %% ../nbs/01_methods.ipynb 152
 @multi
 def compute_profile_dist(models):
     """Compute the probability distribution of the relevant profiles."""
@@ -945,7 +969,7 @@ def compute_profile_dist(models):
     return profile_distribution
 
 
-# %% ../nbs/01_methods.ipynb 154
+# %% ../nbs/01_methods.ipynb 153
 @method(compute_profile_dist, 'multi-player-symmetric')
 def compute_profile_dist(models):
     """Compute the probability distribution of the relevant profiles - we have
@@ -988,7 +1012,7 @@ def compute_profile_dist(models):
     return profile_distribution
 
 
-# %% ../nbs/01_methods.ipynb 158
+# %% ../nbs/01_methods.ipynb 157
 Z = {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1081,7 +1105,7 @@ for likelihoods_by_player in result1.values():
 fastcore.test.test_eq(result2_sum, 1)
 
 
-# %% ../nbs/01_methods.ipynb 161
+# %% ../nbs/01_methods.ipynb 160
 Z = {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1260,7 +1284,7 @@ for profile in profiles_filtered:
                                  expected2[profile][player])
 
 
-# %% ../nbs/01_methods.ipynb 163
+# %% ../nbs/01_methods.ipynb 162
 @multi
 def compute_success(models):
     """Compute the success of the two strategies under consideration."""
@@ -1360,7 +1384,7 @@ def compute_success(models):
     return ΠA, ΠB
 
 
-# %% ../nbs/01_methods.ipynb 168
+# %% ../nbs/01_methods.ipynb 167
 Z = {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1404,7 +1428,7 @@ for result, expected in zip(result1[1], expected1[1]):
     fastcore.test.test_close(result, expected)
 
 
-# %% ../nbs/01_methods.ipynb 171
+# %% ../nbs/01_methods.ipynb 170
 Z = {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1477,7 +1501,7 @@ for result, expected in zip(result2[1], expected2[1]):
     fastcore.test.test_close(result, expected)
 
 
-# %% ../nbs/01_methods.ipynb 174
+# %% ../nbs/01_methods.ipynb 173
 Z = {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
                      "S1": [1, 2]}
@@ -1555,13 +1579,13 @@ for result, expected in zip(result2[1], expected2[1]):
     fastcore.test.test_close(result, expected)
 
 
-# %% ../nbs/01_methods.ipynb 176
+# %% ../nbs/01_methods.ipynb 175
 def vals(d: dict):
     "Return the values of a dictionary."
     return d.values()
 
 
-# %% ../nbs/01_methods.ipynb 177
+# %% ../nbs/01_methods.ipynb 176
 def infer_n_models(models):
     "Infer the number of models from the model payoffs."
     try:
@@ -1582,7 +1606,7 @@ def infer_n_models(models):
     return n_models
 
 
-# %% ../nbs/01_methods.ipynb 182
+# %% ../nbs/01_methods.ipynb 181
 @method(build_transition_matrix, 'multiple-populations')
 def build_transition_matrix(models: dict  # A dictionary that contains the parameters in `ModelTypeEGTMultiple`
                             ):
@@ -1609,7 +1633,15 @@ def build_transition_matrix(models: dict  # A dictionary that contains the param
         ΠA, ΠB = compute_success(assoc(models,
                                        "transition_indices",
                                        [current_state, new_state]))
-        ρ = fixation_rate_stable(ΠA, ΠB, β)
+        # TODO: Clean up assymetric beta code below
+        ind1_tuple = list(map(int, current_state.split("-")))
+        ind2_tuple = list(map(int, new_state.split("-")))
+        differ = [i1 != i2 for i1, i2 in zip(ind1_tuple, ind2_tuple)]
+        affected_sector = f"S{np.argmax(differ[::-1]) + 1}"
+        if isinstance(β, dict):
+            ρ = fixation_rate_stable(ΠA, ΠB, β[affected_sector])
+        else:
+            ρ = fixation_rate_stable(ΠA, ΠB, β)
         n_mutations = sum(valid_transition(current_state, s_alt)
                           for s_alt in S)
         M[:, row_ind, col_ind] = ρ / n_mutations
@@ -1619,7 +1651,7 @@ def build_transition_matrix(models: dict  # A dictionary that contains the param
             'n_models': n_models}
 
 
-# %% ../nbs/01_methods.ipynb 188
+# %% ../nbs/01_methods.ipynb 187
 β = 1
 Z = {"S1": 50, "S2": 50, "S3": 50}
 allowed_sectors = {"P3": ["S3"],
@@ -1653,7 +1685,7 @@ result_sums = np.sum(result, axis=-1)
 fastcore.test.test_close(result_sums, 1)
 
 
-# %% ../nbs/01_methods.ipynb 192
+# %% ../nbs/01_methods.ipynb 191
 @multi
 def compute_success_analytical(models):
     return models.get('success_analytical_derivation')
@@ -1723,7 +1755,7 @@ def compute_success_analytical(models):
     return SA, SB
 
 
-# %% ../nbs/01_methods.ipynb 193
+# %% ../nbs/01_methods.ipynb 192
 Z = {"S2": 10, "S1": 10}
 β = 1
 sector_strategies = {"S2": [3, 4],
@@ -1793,7 +1825,7 @@ for row_ind in range(M.shape[2]):
                                      result[model_ind, col_ind, row_ind])
 
 
-# %% ../nbs/01_methods.ipynb 196
+# %% ../nbs/01_methods.ipynb 195
 @method(compute_success_analytical, '2sector2strategy3player')
 def compute_success_analytical(models):
     """Compute the success of each strategy involved in a transition for
@@ -1859,7 +1891,7 @@ def compute_success_analytical(models):
     return SA, SB
 
 
-# %% ../nbs/01_methods.ipynb 197
+# %% ../nbs/01_methods.ipynb 196
 Z = {"S2": 10, "S1": 10}
 β = 1
 sector_strategies = {"S2": [3, 4],
@@ -1929,7 +1961,7 @@ for row_ind in range(M.shape[2]):
             fastcore.test.test_close(M[model_ind, col_ind, row_ind],
                                      result[model_ind, col_ind, row_ind])
 
-# %% ../nbs/01_methods.ipynb 198
+# %% ../nbs/01_methods.ipynb 197
 Z = {"S2": 10, "S1": 10}
 β = 1
 sector_strategies = {"S2": [4, 5],
@@ -1999,7 +2031,7 @@ for row_ind in range(M.shape[2]):
             fastcore.test.test_close(M[model_ind, col_ind, row_ind],
                                      result[model_ind, col_ind, row_ind])
 
-# %% ../nbs/01_methods.ipynb 201
+# %% ../nbs/01_methods.ipynb 200
 def payoffs_encanacao_2016(models):
     names = ['b_r', 'b_s', 'c_s', 'c_t', 'σ']
     b_r, b_s, c_s, c_t, σ = [models[k] for k in names]
@@ -2058,7 +2090,7 @@ def payoffs_encanacao_2016(models):
     return {**models, "payoffs": payoffs}
 
 
-# %% ../nbs/01_methods.ipynb 202
+# %% ../nbs/01_methods.ipynb 201
 Z = {"S3": 50, "S2": 50, "S1": 50}
 β = 0.08
 sector_strategies = {"S3": [4, 5],
