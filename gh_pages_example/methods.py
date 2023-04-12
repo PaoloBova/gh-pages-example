@@ -1384,6 +1384,75 @@ def compute_success(models):
     return ΠA, ΠB
 
 
+@method(compute_success, "functional")
+def compute_success(models):
+    """Compute the success of the two strategies under consideration for each
+    number of k mutants implied by the transition."""
+    models = apply_profile_filters(models)
+    ind1, ind2 = models['transition_indices']
+    sector_strategies = models['sector_strategies']
+    Z = models['Z']
+    payoffs_function = models['payoffs_function']
+
+    ind1_tuple = list(map(int, ind1.split("-")))
+    ind2_tuple = list(map(int, ind2.split("-")))
+    differ = [i1 != i2 for i1, i2 in zip(ind1_tuple, ind2_tuple)]
+    affected_sector = f"S{np.argmax(differ[::-1]) + 1}"
+    current_strategy = ind1_tuple[np.argmax(differ)]
+    mutant_strategy = ind2_tuple[np.argmax(differ)]
+
+    ΠA = []
+    ΠB = []
+    for n_mutants in range(1, Z[affected_sector]):
+        dist1 = compute_profile_dist({**models,
+                                      'chosen_strategy': current_strategy,
+                                      'current_strategy': current_strategy,
+                                      'mutant_strategy': mutant_strategy,
+                                      'affected_sector': affected_sector,
+                                      'n_mutants': n_mutants})
+        dist2 = compute_profile_dist({**models,
+                                      'chosen_strategy': mutant_strategy,
+                                      'current_strategy': current_strategy,
+                                      'mutant_strategy': mutant_strategy,
+                                      'affected_sector': affected_sector,
+                                      'n_mutants': n_mutants})
+        # Record the strategy counts in the population implied by the number of
+        # mutants so that our payoff function can make use of this information
+        strategy_counts = {str(strategy): Z[sector]
+                           for strategy in ind1_tuple
+                           for sector in sector_strategies.keys()
+                           if strategy in sector_strategies[sector]}
+        strategy_counts = {**strategy_counts,
+                           str(current_strategy): Z[affected_sector] - n_mutants,
+                           str(mutant_strategy): n_mutants}
+        population_state = models.get("population_state", {})
+        population_state = {**population_state,
+                            "strategy_counts": strategy_counts}
+        # Compute the payoffs for each strategy in each possible profile
+        # and the likelihood of that profile occuring.
+        payoffsA = []
+        likelihoodsA = []
+        for profile, player_map in dist1.items():
+            for player, likelihood in player_map.items():
+                payoffsA.append(payoffs_function({**models,
+                                                  "population_state": population_state,
+                                                  "profile": profile,
+                                                  "player": player}))
+                likelihoodsA.append(likelihood)
+        ΠA.append(np.dot(np.array(payoffsA).T, likelihoodsA))
+        payoffsB = []
+        likelihoodsB = []
+        for profile, player_map in dist2.items():
+            for player, likelihood in player_map.items():
+                payoffsB.append(payoffs_function({**models,
+                                                  "population_state": population_state,
+                                                  "profile": profile,
+                                                  "player": player}))
+                likelihoodsB.append(likelihood)
+        ΠB.append(np.dot(np.array(payoffsB).T, likelihoodsB))
+    return ΠA, ΠB
+
+
 # %% ../nbs/01_methods.ipynb 167
 Z = {"S2": 10, "S1": 10}
 sector_strategies = {"S2": [3, 4],
