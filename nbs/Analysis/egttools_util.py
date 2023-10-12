@@ -145,21 +145,22 @@ def check_replicator_stability_pairwise_games(stationary_points: List[np.ndarray
     for point in stationary_points:
         # now we check the stability of the roots using the jacobian
         eigenvalues = eigvals(jacobian(point))
-        # If all eigenvalues are negatives or zero it's stable
-        if (eigenvalues.real < -atol_neg).all() or np.array(
-                [np.isclose(el, 0., atol=atol_zero) for el in eigenvalues.real[eigenvalues.real > -atol_neg]]).all():
-            stability.append(1)
-        # If all eigenvalues are positive or zero it's unstable
-        elif (eigenvalues.real > atol_pos).all() or np.array(
-                [np.isclose(el, 0., atol=atol_zero) for el in eigenvalues.real[eigenvalues.real < atol_pos]]).all():
-            stability.append(-1)
-        else:  # saddle point
-            # This is probably wrong, but let's first assume that if we reach here, the point is a saddle
-            stability.append(0)
-            # # we need to check the hessian matrix to find out if the point is a saddle
-            # eigenvalues, _ = np.linalg.eig(sol.hess)
-            # if (eigenvalues > 0).any() and (eigenvalues < 0).any():
-            #     stability.append(0)
+        # Process eigenvalues to classify those within tolerance as zero
+        effective_zero_eigenvalues = [ev for ev in eigenvalues if abs(ev.real) <= atol_zero]
+        non_zero_eigenvalues = [ev for ev in eigenvalues if abs(ev.real) > atol_zero]
+
+       # If all eigenvalues are effectively zero
+        if len(effective_zero_eigenvalues) == len(eigenvalues):
+            stability.append(0)  # Marginally or indeterminately stable
+        # All non-zero eigenvalues have negative real parts => stable
+        elif all(ev.real < -atol_neg for ev in non_zero_eigenvalues):
+            stability.append(1)  # Stable
+        # All non-zero eigenvalues have positive real parts => unstable
+        elif all(ev.real > atol_pos for ev in non_zero_eigenvalues):
+            stability.append(-1)  # Unstable
+        # Mixture of positive and negative real parts => saddle
+        else:
+            stability.append(0)  # Saddle
 
     return stability
 
@@ -293,7 +294,7 @@ plt.show()
 
 # TODO:
 # 1. Clean up the new functionality for sending to Elias
-# 2. Conider fixing the saddle point code (ask ChatGPT for help too)
+# 2. Consider fixing the saddle point code (ask ChatGPT for help too)
 # 3. Implement custom replicator equations which allow an implementation
 # of higher selection intensities (and mutation rates).
 # 4. Consider fixing the Markov Chain code we have.
