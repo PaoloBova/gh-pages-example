@@ -121,8 +121,8 @@ def build_multi_race(
                 W_2=100, # Timeline until AI breakthrough if all labs are safe in layer 2
                 gamma_1=0, # New AI Market contestability rate in layer 1
                 gamma_2=0, # New AI Market contestability rate in layer 2
-                delta_1=0.99, # Discount rate for future benefits of labs in layer 1
-                delta_2=0.99, # Discount rate for future benefits of labs in layer 2
+                delta_1=0.9, # Discount rate for future benefits of labs in layer 1
+                delta_2=0.9, # Discount rate for future benefits of labs in layer 2
                 alpha_1=2,  # Spillover factor for layer 1 labs of a breakthrough in layer 2
                 alpha_2=2, # Spillover factor for layer 2 labs of a breakthrough in layer 1
                 β:valid_dtypes=0.1, # learning_rate: the rate at which players imitate each other
