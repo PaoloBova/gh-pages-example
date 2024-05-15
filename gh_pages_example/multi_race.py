@@ -30,3 +30,4 @@ import numpy as np
 import pandas
 import scipy
 import seaborn as sns
+import tqdm
