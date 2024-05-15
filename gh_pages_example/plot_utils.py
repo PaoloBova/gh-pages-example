@@ -204,6 +204,8 @@ class MarkovChain:
             'va': 'center',
             'fontsize': self.kwargs.get("fontsize", 14)
         }
+        self.scale_xlim = self.kwargs.get("scale_xlim", 1)
+        self.scale_ylim = self.kwargs.get("scale_ylim", 1)
 
         # How to represent the probabilities
         self.percentages = self.kwargs.get("percentages", False)
@@ -239,6 +241,8 @@ class MarkovChain:
         self.figsize = (n*2+2, n*2+2)
         self.xlim = (-n-1, n+1)
         self.ylim = (-n-1, n+1)
+        self.xlim = tuple([self.scale_xlim * l for l in self.xlim])
+        self.ylim = tuple([self.scale_ylim * l for l in self.ylim])
 
         # Scale by n to have more room
         self.node_centers = unit_circle_coords * n
@@ -256,6 +260,8 @@ class MarkovChain:
         self.figsize = (n*2+4, n*2+4)
         self.xlim = (-1*(n+2), n+2)
         self.ylim = (-2, n*2+2)
+        self.xlim = tuple([self.scale_xlim * l for l in self.xlim])
+        self.ylim = tuple([self.scale_ylim * l for l in self.ylim])
 
         # Scale by n to have more room
         self.node_centers = grid_coords * n
@@ -424,6 +430,7 @@ def plot_strategy_distribution(data, # The dataset containing data on parameters
                                title='Strategy distribution', # the plot title
                                thresholds=["threshold_society_prefers_safety",
                                            "threshold_risk_dominant_safety"], # A list of threshold names in data
+                               cmap=plt.colormaps["tab10"],
                                ) -> None:
     """Plot the strategy distribution as we vary `x`."""
 
@@ -431,8 +438,9 @@ def plot_strategy_distribution(data, # The dataset containing data on parameters
     ax.stackplot(data[x],
                  [data[strategy + "_frequency"] for strategy in strategy_set],
                  labels=strategy_set,
+                 colors=[cmap(i) for i in range(cmap.N)],
                  alpha=0.8)
-    ax.legend(loc='upper left')
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     ax.set_title(title)
     ax.set_xlabel(x_label)
     ax.set_ylabel('Proportion')
