@@ -696,9 +696,6 @@ def test_add_pdfs_to_grid():
         if M > 200:
             assert len(ax.patches) > 0
 
-
-test_add_pdfs_to_grid()
-
 # %% ../nbs/plots_utils.ipynb 32
 def test_add_hists_to_grid():
     # Create a DataFrame with some dummy data
@@ -722,4 +719,3 @@ def test_add_hists_to_grid():
     xlims = [ax.get_xlim() for ax in fig.axes]
     assert all(xlim == xlims[0] for xlim in xlims)
 
-test_add_hists_to_grid()
