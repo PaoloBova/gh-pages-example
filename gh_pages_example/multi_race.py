@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = []
 
-# %% ../nbs/Analysis/17_multi_race.ipynb 2
+# %% ../nbs/Analysis/17_multi_race.ipynb 3
 from .conditions import *
 from .data_utils import *
 from .methods import *
@@ -28,6 +28,7 @@ from nbdev.showdoc import *
 import nptyping
 import numpy as np
 import pandas
+import plotly.express as px
 import scipy
 import seaborn as sns
 import tqdm
