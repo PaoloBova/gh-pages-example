@@ -15,7 +15,7 @@ import itertools
 import math
 import typing
 
-import chaospy
+# import chaospy
 import fastcore
 import more_itertools
 from nbdev.showdoc import *
