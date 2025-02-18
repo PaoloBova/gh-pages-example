@@ -2,7 +2,8 @@
 
 # %% auto 0
 __all__ = ['Node', 'MarkovChain', 'plot_strategy_distribution', 'plot_heatmap', 'select_unique_values', 'plot_generic_grid',
-           'add_hists_to_grid', 'add_pdfs_to_grid', 'test_add_pdfs_to_grid', 'test_add_hists_to_grid']
+           'add_hists_to_grid', 'combine_duplicate_x_values', 'add_pdfs_to_grid', 'test_add_pdfs_to_grid',
+           'test_add_hists_to_grid']
 
 # %% ../nbs/plots_utils.ipynb 2
 from .model_utils import *
@@ -613,6 +614,24 @@ def add_hists_to_grid(axs, df, x_col, y_col, data_col):
             
     return axs
 
+def combine_duplicate_x_values(data, freq, tol=1e-6):
+    """
+    Combine duplicate x-values and sum their frequencies.
+    
+    Args:
+    data (np.array): The input x-values.
+    freq (np.array): The input frequencies.
+    
+    Returns:
+    np.array: An array of combined x-values.
+    np.array: An array of combined frequencies.
+    """
+    # First, we consider a tolerance for similar data points to be considered equal
+    data = np.round(data, int(-np.log10(tol)))
+    unique_data = np.unique(data)
+    unique_freq = np.array([np.sum(freq[data == d]) for d in unique_data])
+    return unique_data, unique_freq
+
 def add_pdfs_to_grid(axs, df, x_col, y_col, data_col, freq_col):
     """
     Add pdf plots to the grid of subplots in `axs`.
@@ -637,6 +656,9 @@ def add_pdfs_to_grid(axs, df, x_col, y_col, data_col, freq_col):
         for j, category_x in enumerate(categories_x):
             data = df[(df[x_col] == category_x) & (df[y_col] == category_y)][data_col]
             freq = df[(df[x_col] == category_x) & (df[y_col] == category_y)][freq_col]
+            # We need to combine any duplicate x-values and sum their frequencies
+            data, freq = combine_duplicate_x_values(data, freq, tol=1e-2)
+            
             color = "skyblue"
             axs[i, j].set_xlim(hist_range)  # Set the x-limits of the axes
             axs[i, j].set_ylim([0, hist_height])  # Set the y-limits of the axes

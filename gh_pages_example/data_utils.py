@@ -14,6 +14,7 @@ import os
 import uuid
 import tqdm
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 import random
 import json
 
@@ -120,7 +121,7 @@ def run_all_simulations(param_list: list,
     simulation_id = create_id()
     os.makedirs("/".join([simulation_dir, simulation_id]))
     os.makedirs("/".join([plot_dir, simulation_id]))
-    for idx, parameters in tqdm(enumerate(param_list)):
+    for idx, parameters in tqdm.tqdm(enumerate(param_list)):
         if simulation_fn is not None:
             df = simulation_fn(parameters)
             df["simulation_id"] = simulation_id
@@ -133,12 +134,35 @@ def run_all_simulations(param_list: list,
             simulation_results.append(df)
         if plotting_fn is not None:
             fig = plotting_fn(parameters)
-            # Save the figure
-            filename = f"plot_{simulation_id}_{idx}.png"
-            filepath = os.path.join(plot_dir, simulation_id, filename)
-            fig.savefig(filepath)
-            print(f"Saved file: {filepath}")
-            plt.close(fig)  # Close the figure to free up memory
-            figs.append(fig)
+            if len(fig) > 1:
+                for i, f in enumerate(fig):
+                    # Save the figure
+                    filename = f"plot_{simulation_id}_fig_{i}_{idx}.png"
+                    filepath = os.path.join(plot_dir, simulation_id, filename)
+                    if f is not None:
+                        if isinstance(f, go.Figure):
+                            # This is a Plotly figure
+                            f.write_image(filepath)
+                        elif isinstance(f, plt.Figure):
+                            # This is a Matplotlib figure
+                            f.savefig(filepath)
+                            plt.close(f)  # Close the figure to free up memory
+                        print(f"Saved file: {filepath}")
+                    figs.append(f)
+                    
+            else:
+                # Save the figure
+                filename = f"plot_{simulation_id}_{idx}.png"
+                filepath = os.path.join(plot_dir, simulation_id, filename)
+                if fig is not None:
+                    if isinstance(fig, go.Figure):
+                        # This is a Plotly figure
+                        fig.write_image(filepath)
+                    elif isinstance(fig, plt.Figure):
+                        # This is a Matplotlib figure
+                        fig.savefig(filepath)
+                        plt.close(fig)  # Close the figure to free up memory
+                    print(f"Saved file: {filepath}")
+                figs.append(fig)
         
     return figs, simulation_results
